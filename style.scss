@@ -1,0 +1,42 @@
+#board {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: min-content;
+
+    .tile-row {
+        display: flex;
+    }
+
+    .tile {
+        width: 20px;
+        height: 20px;
+
+        &.wall {
+            background-color: black;
+        }
+
+        &.path {
+            background-color: bisque;
+        }
+
+        &.gate {
+            background-color: cyan;
+        }
+
+        &.home {
+            background-color: red;
+        }
+    }
+
+    #pacman {
+        width: 20px;
+        height: 20px;
+        background: green;
+        border-radius: 100%;
+        position: absolute;
+        top: 0;
+        left: 0;
+    }
+}
