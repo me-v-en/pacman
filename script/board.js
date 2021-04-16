@@ -1,5 +1,6 @@
 // BOARD = [TILE]
 // Dimensions : 28 x 31
+// COORD [x,y]
 import Tile from './tile';
 
 let boardData = require("./board.json");
@@ -29,14 +30,14 @@ export default class Board {
         let DOMrow = document.createElement("div");
         DOMrow.classList = "tile-row";
         DOMrow.id = "tile-row-" + i;
-
         document.getElementById("board").appendChild(DOMrow);
-        console.log("created ", DOMrow.id); 
     }
 
-
-    // possible player type : 'pacman', 'ghost'
-    canMoveOnTile (x, y, playerType){
-        
+    getTile(coord){
+        if(coord){
+            let 
+        return this.boardTiles[coord[0]][coord[1]];
+        }
     }
+
 }

@@ -4,11 +4,10 @@
 // hasBonusPoints
 
 export default class Tile {
-    constructor(initialData, coordY, coordX, hasPoints = false) {
+    constructor(initialData, coord, hasPoints = false) {
         //possible tileType : 'PATH', 'WALL', 'GATE', 'HOME'
         this.tileType = '';
-        this.coordY = coordY;
-        this.coordX = coordX;
+        this.coord = coord;
         this.hasPoints = hasPoints;
         
         switch (initialData) {
@@ -34,8 +33,8 @@ export default class Tile {
     createTileElement(){
         let tileElement = document.createElement("div");
         tileElement.classList = `tile ${this.tileType.toLowerCase()}`;
-        tileElement.id = `tile-${this.coordY}-${this.coordX}`;
+        tileElement.id = `tile-${this.coord[0]}-${this.coord[1]}`;
 
-        document.getElementById("tile-row-"+this.coordY).appendChild(tileElement);
+        document.getElementById("tile-row-"+this.coord[0]).appendChild(tileElement);
     }
 }
