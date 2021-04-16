@@ -1,5 +1,8 @@
 import Board from "./board";
 import Pacman from "./pacman";
+import Tile from "./tile";
+
+import {modulo, DIRECTION_MATRICES, addCoord} from './utils';
 
 
 export default class Game {
@@ -15,7 +18,6 @@ export default class Game {
 
     initGame() {
         this.board.buildBoard();
-        this.startGameLoop();
     }
 
     startGameLoop() {
@@ -28,7 +30,7 @@ export default class Game {
     loop(timestamp) {
         let progress = timestamp - this.lastRender;
 
-        // console.log('LOOP : ', progress, timestamp, this.lastRender);
+        console.log('LOOP : ', progress, timestamp, this.lastRender);
         this.update(progress);
         this.draw();
 
@@ -37,13 +39,13 @@ export default class Game {
                     this.lastRender = timestamp;
                     window.requestAnimationFrame(this.loop.bind(this));
                 },
-                500);
+                200);
         }
     }
 
     update(progress) {
         // Update the state of the world for the elapsed time since last render
-        this.pacman.updatePacman();
+        this.updatePacman();
     }
 
     draw() {
@@ -53,16 +55,16 @@ export default class Game {
 
     bindEventHandler() {
         console.log('add handler');
-        document.addEventListener("keyup", this.keyupEventHandler);
+        document.addEventListener("keyup", this.keyupEventHandler.bind(this));
     }
 
     unbindEventHandler() {
-        console.log('remove handler');
         document.removeEventListener("keyup", this.keyupEventHandler);
     }
 
     keyupEventHandler(event) {
-        let keycode = event.target.value;
+        event.preventDefault(); 
+        let keycode = event.which;
 
         // LEFT : ARROW_LEFT or Q
         if (keycode === 37 || keycode === 81) {
@@ -80,11 +82,20 @@ export default class Game {
         if (keycode === 40 || keycode === 83) {
             this.pacman.setDirection("DOWN");
         }
+
+        console.log('keyup event : ', keycode, ' Direction : ', this.pacman.direction);
+
     }
 
     updatePacman(){
         if(this.pacman.direction){
-            
+            let directionMatrice = DIRECTION_MATRICES[this.pacman.direction];
+            let coordToMove = addCoord(directionMatrice, this.pacman.coord);
+            let tileToMove = this.board.getTile(coordToMove);
+            console.log('coordToMove ',coordToMove);
+            if (tileToMove.tileType === 'PATH'){
+                this.pacman.setCoord(tileToMove.coord);
+            }
         }
     }
 

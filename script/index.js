@@ -14,5 +14,6 @@ function docReady(fn) {
 docReady(()=>{
     const game = new Game();
     game.initGame();
+    game.startGameLoop();
 })
 

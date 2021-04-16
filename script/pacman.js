@@ -3,10 +3,10 @@ const TILE_SIZE = boardData.tileSize;
 
 export default class Pacman {
     constructor(coord) {
-        this.reinitPacman
+        this.reinitPacman();
     }
 
-    reinitPacman(coord = [1,1]) {
+    reinitPacman(coord = [14,1]) {
         this.coord = coord;
         this.direction = '';
         this.DOMPacman = document.getElementById('pacman');
@@ -16,6 +16,10 @@ export default class Pacman {
 
     setDirection(direction) {
         this.direction = direction;
+    }
+
+    setCoord(coord) {
+        this.coord = coord;
     }
 
     updatePacman(){

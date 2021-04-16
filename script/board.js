@@ -3,6 +3,8 @@
 // COORD [x,y]
 import Tile from './tile';
 
+import {modulo} from './utils';
+
 let boardData = require("./board.json");
 const BOARD_ARRAY = boardData.boardArray;
 const BOARD_WIDTH = boardData.boardArray[0].length;
@@ -19,7 +21,7 @@ export default class Board {
             let line = [];
             this.createRowElement(i);
             for (let j = 0; j < BOARD_WIDTH; j++) {
-                let tile = new Tile(BOARD_ARRAY[i][j], i, j);
+                let tile = new Tile(BOARD_ARRAY[i][j], [i, j]);
                 line.push(tile);
             }
             this.boardTiles.push(line);
@@ -35,8 +37,9 @@ export default class Board {
 
     getTile(coord){
         if(coord){
-            let 
-        return this.boardTiles[coord[0]][coord[1]];
+            let coordY = modulo(coord[0], BOARD_HEIGHT);
+            let coordX = modulo(coord[1], BOARD_WIDTH);
+        return this.boardTiles[coordY][coordX];
         }
     }
 
