@@ -2,7 +2,11 @@ import Board from "./board";
 import Pacman from "./pacman";
 import Tile from "./tile";
 
-import {modulo, DIRECTION_MATRICES, addCoord} from './utils';
+import {
+    modulo,
+    DIRECTION_MATRICES,
+    addCoord
+} from './utils';
 
 
 export default class Game {
@@ -10,6 +14,10 @@ export default class Game {
     constructor() {
         this.board = new Board();
         this.pacman = new Pacman();
+
+        this.scoreElement = document.getElementById('score');
+
+        this.score = 0;
         // time since the start of the game loop
         this.lastRender = 0;
         // Possible state : STOPPED, START, GAME, CHASE
@@ -63,7 +71,7 @@ export default class Game {
     }
 
     keyupEventHandler(event) {
-        event.preventDefault(); 
+        event.preventDefault();
         let keycode = event.which;
 
         // LEFT : ARROW_LEFT or Q
@@ -82,21 +90,30 @@ export default class Game {
         if (keycode === 40 || keycode === 83) {
             this.pacman.setDirection("DOWN");
         }
-
-        console.log('keyup event : ', keycode, ' Direction : ', this.pacman.direction);
-
     }
 
-    updatePacman(){
-        if(this.pacman.direction){
+    updatePacman() {
+        if (this.pacman.direction) {
             let directionMatrice = DIRECTION_MATRICES[this.pacman.direction];
             let coordToMove = addCoord(directionMatrice, this.pacman.coord);
             let tileToMove = this.board.getTile(coordToMove);
-            console.log('coordToMove ',coordToMove);
-            if (tileToMove.tileType === 'PATH'){
+            console.log(tileToMove);
+            console.log(tileToMove.hasPoint);
+            if (tileToMove.tileType === 'PATH') {
                 this.pacman.setCoord(tileToMove.coord);
+                if (tileToMove.hasPoint) {
+                    this.addScore(10);
+                    tileToMove.removePoint();
+                }
+            } else {
+                this.pacman.direction = '';
             }
         }
+    }
+
+    addScore(value){
+        this.score += value;
+        this.scoreElement.textContent = this.score;
     }
 
 }

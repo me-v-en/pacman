@@ -15,6 +15,7 @@ body {
     }
 
     .tile {
+        position: relative;
         width: 20px;
         height: 20px;
 
@@ -23,7 +24,7 @@ body {
         }
 
         &.path {
-            background-color: bisque;
+            background-color: #e0bfbf;
         }
 
         &.gate {
@@ -33,15 +34,31 @@ body {
         &.home {
             background-color: red;
         }
+
+        &.point {
+            &::after {
+                content: '';
+                height: 5px;
+                width: 5px;
+                position: absolute;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                background-color: white;
+                border-radius: 5px;
+
+            }
+        }
     }
 
     #pacman {
         width: 20px;
         height: 20px;
-        background: green;
+        background: #ffeb3b;
         border-radius: 100%;
         position: absolute;
         top: 0;
         left: 0;
+        z-index: 1;
     }
 }
