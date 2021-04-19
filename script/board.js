@@ -5,10 +5,10 @@ import Tile from './tile';
 
 import {modulo} from './utils';
 
-let boardData = require("./board.json");
-const BOARD_ARRAY = boardData.boardArray;
-const BOARD_WIDTH = boardData.boardArray[0].length;
-const BOARD_HEIGHT = boardData.boardArray.length;
+let gameData = require("./data.json");
+const BOARD_ARRAY = gameData.boardArray;
+const BOARD_WIDTH = gameData.boardArray[0].length;
+const BOARD_HEIGHT = gameData.boardArray.length;
 
 export default class Board {
     constructor() {

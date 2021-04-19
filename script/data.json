@@ -1,4 +1,5 @@
 {
+    "animationDuration": 50,
     "tileSize": 20,
     "boardWidth": 28,
     "boardHeight": 31,

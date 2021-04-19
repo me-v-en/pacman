@@ -37,18 +37,14 @@ export default class Game {
 
     loop(timestamp) {
         let progress = timestamp - this.lastRender;
-
-        console.log('LOOP : ', progress, timestamp, this.lastRender);
         this.update(progress);
         this.draw();
 
         if (this.GAME_STATE !== 'STOPPED') {
-            window.setTimeout(() => {
-                    this.lastRender = timestamp;
-                    window.requestAnimationFrame(this.loop.bind(this));
-                },
-                200);
+            this.lastRender = timestamp;
+            window.requestAnimationFrame(this.loop.bind(this));
         }
+
     }
 
     update(progress) {
@@ -62,7 +58,6 @@ export default class Game {
     }
 
     bindEventHandler() {
-        console.log('add handler');
         document.addEventListener("keyup", this.keyupEventHandler.bind(this));
     }
 
@@ -93,25 +88,31 @@ export default class Game {
     }
 
     updatePacman() {
+        // If animation is still happening
         if (this.pacman.direction) {
+            if(!this.pacman.animationIsPending()){
+            // Calcul of the next tile in the direction
             let directionMatrice = DIRECTION_MATRICES[this.pacman.direction];
-            let coordToMove = addCoord(directionMatrice, this.pacman.coord);
+            let coordToMove = addCoord(directionMatrice, this.pacman.currentCoord);
             let tileToMove = this.board.getTile(coordToMove);
-            console.log(tileToMove);
-            console.log(tileToMove.hasPoint);
+
             if (tileToMove.tileType === 'PATH') {
-                this.pacman.setCoord(tileToMove.coord);
+                // setPacmanDirection();
+
+                this.pacman.setTargetCoord(tileToMove.coord);
                 if (tileToMove.hasPoint) {
                     this.addScore(10);
                     tileToMove.removePoint();
                 }
             } else {
                 this.pacman.direction = '';
+                this.pacman.state = 'IDLE';
             }
+        }
         }
     }
 
-    addScore(value){
+    addScore(value) {
         this.score += value;
         this.scoreElement.textContent = this.score;
     }

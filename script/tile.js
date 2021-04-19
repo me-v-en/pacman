@@ -42,8 +42,6 @@ export default class Tile {
 
     removePoint(){
         this.hasPoint = false;
-        console.log(this.DOMElement.classList);
         this.DOMElement.classList.remove('point');
-        console.log(this.DOMElement.classList);
     }
 }
