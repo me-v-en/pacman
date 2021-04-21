@@ -7,6 +7,7 @@
     "utils": "^0.3.1"
   },
   "devDependencies": {
+    "parcel-plugin-static-files-copy": "^2.6.0",
     "sass": "^1.32.8"
   },
   "scripts": {

@@ -71,45 +71,63 @@ export default class Game {
 
         // LEFT : ARROW_LEFT or Q
         if (keycode === 37 || keycode === 81) {
-            this.pacman.setDirection("LEFT");
+            this.pacman.setUserInputDirection("LEFT");
         }
         // RIGHT : ARROW_RIGHT or D
         if (keycode === 39 || keycode === 68) {
-            this.pacman.setDirection("RIGHT");
+            this.pacman.setUserInputDirection("RIGHT");
         }
         // UP : ARROW_UP or Z
         if (keycode === 38 || keycode === 90) {
-            this.pacman.setDirection("UP");
+            this.pacman.setUserInputDirection("UP");
         }
         // DOWN : ARROW_DOWN or S
         if (keycode === 40 || keycode === 83) {
-            this.pacman.setDirection("DOWN");
+            this.pacman.setUserInputDirection("DOWN");
         }
     }
 
     updatePacman() {
-        // If animation is still happening
-        if (this.pacman.direction) {
-            if(!this.pacman.animationIsPending()){
-            // Calcul of the next tile in the direction
-            let directionMatrice = DIRECTION_MATRICES[this.pacman.direction];
-            let coordToMove = addCoord(directionMatrice, this.pacman.currentCoord);
-            let tileToMove = this.board.getTile(coordToMove);
-
-            if (tileToMove.tileType === 'PATH') {
-                // setPacmanDirection();
-
-                this.pacman.setTargetCoord(tileToMove.coord);
-                if (tileToMove.hasPoint) {
-                    this.addScore(10);
-                    tileToMove.removePoint();
+        if (this.pacman.coordIsTargetCoord()) {
+            this.addPointOfCurrentPacmanTile();
+            // If animation is still happening
+            if (this.pacman.direction || this.pacman.userInputDirection) {
+                // if (!this.pacman.animationIsPending()) {
+                // Calcul of the next tile in the direction
+                let nextTile = this.getNextTileInDirection(this.pacman.currentCoord, this.pacman.userInputDirection);
+                if (nextTile && nextTile.tileType === 'PATH') {
+                    this.pacman.confirmUserDirection();
+                    this.pacman.setTargetCoord(nextTile.coord);
+                } else {
+                    let nextTile = this.getNextTileInDirection(this.pacman.currentCoord, this.pacman.direction);
+                    if (nextTile && nextTile.tileType === 'PATH') {
+                        this.pacman.setTargetCoord(nextTile.coord);
+                    } else {
+                        this.pacman.direction = '';
+                        this.pacman.state = 'IDLE';
+                    }
                 }
-            } else {
-                this.pacman.direction = '';
-                this.pacman.state = 'IDLE';
             }
         }
+    }
+    setPacmanTargetTile(tile) {
+        this.pacman.setTargetCoord(tile.coord);
+    }
+
+    addPointOfCurrentPacmanTile() {
+        let currentTile = this.board.getTile(this.pacman.currentCoord);
+        if (currentTile.hasPoint) {
+            this.addScore(10);
+            currentTile.removePoint();
         }
+    }
+
+    getNextTileInDirection(currentCoord, direction) {
+        if(direction && currentCoord){
+        let directionMatrice = DIRECTION_MATRICES[direction];
+        let coordToMove = addCoord(directionMatrice, currentCoord);
+        return this.board.getTile(coordToMove);
+        } else return false;
     }
 
     addScore(value) {

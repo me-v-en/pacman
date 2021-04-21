@@ -54,12 +54,22 @@ body {
     #pacman {
         width: 20px;
         height: 20px;
-        background: #ffeb3b;
-        border-radius: 100%;
         position: absolute;
         top: 0;
         left: 0;
         z-index: 1;
         transition: none;
+
+        .head {
+            position: absolute;
+            top: -14px;
+            z-index: 1;
+            left: -6px;
+        }
+
+        .body {
+            position: absolute;
+            left: -6px;
+        }
     }
 }

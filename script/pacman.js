@@ -17,17 +17,31 @@ export default class Pacman {
         // Timestamp fo the start of the animation
         this.animTimestamp = null;
         this.direction = '';
+        this.userInputDirection = '';
         this.DOMPacman = document.getElementById('pacman');
+        this.DOMPacmanHead = document.querySelector('#pacman .head');
+        this.DOMPacmanBody = document.querySelector('#pacman .body');
         this.drawPacman();
     }
 
-    animationIsPending(){    
-        if(this.state ==='MOVING'){
-        return this.getProgressOfAnimation() < 1;
-        }
-        else return false;
+    // animationIsPending(){    
+    //     if(this.state ==='MOVING'){
+    //     return this.getProgressOfAnimation() < 1;
+    //     }
+    //     else return false;
+    // }
+
+    setUserInputDirection(direction) {
+        this.userInputDirection = direction;
+        window.setTimeout(() => {
+            this.userInputDirection = '';
+        }, 500);
     }
 
+    confirmUserDirection() {
+        this.direction = this.userInputDirection;
+        this.changePacmanSprite();
+    }
 
     setDirection(direction) {
         this.direction = direction;
@@ -40,6 +54,10 @@ export default class Pacman {
         window.setTimeout(() => {
             this.currentCoord = coord;
         }, ANIMATION_DURATION);
+    }
+
+    coordIsTargetCoord() {
+        return this.currentCoord === this.targetCoord;
     }
 
     updateAnimation() {
@@ -72,5 +90,34 @@ export default class Pacman {
     getProgressOfAnimation() {
         let currentTimeStamp = new Date().getTime();
         return (currentTimeStamp - this.animTimestamp) / ANIMATION_DURATION;
+    }
+
+    changePacmanSprite(){
+        if(this.direction !== 'LEFT'){
+            this.DOMPacman.classList.remove('left');            
+        }
+        if(this.state === 'IDLE'){
+            this.DOMPacmanHead.src = "/img/head.png";
+            this.DOMPacmanBody.src = "/img/body.png";
+        }
+        else{
+        if(this.direction === 'UP'){
+            this.DOMPacmanHead.src = "/img/head-up.png";
+            this.DOMPacmanBody.src = "/img/body.png";
+        }
+        if(this.direction === 'DOWN'){
+            this.DOMPacmanHead.src = "/img/head.png";
+            this.DOMPacmanBody.src = "/img/body.png";
+        }
+        if(this.direction === 'RIGHT' || this.direction === 'LEFT'){
+            this.DOMPacmanHead.src = "/img/head-right.png";
+            this.DOMPacmanBody.src = "/img/body-right.png";
+            
+        }
+        if(this.direction === 'LEFT'){
+            this.DOMPacman.classList.add('left');            
+        }
+    }
+        
     }
 }
