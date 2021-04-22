@@ -1,0 +1,53 @@
+body {
+  overflow: hidden;
+}
+
+#board {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: min-content;
+  margin: 0 auto;
+  background: url(/bg.4fe0b1f9.jpg);
+  background-size: cover;
+}
+#board .tile-row {
+  display: flex;
+}
+#board .tile {
+  position: relative;
+  width: 30px;
+  height: 30px;
+}
+#board .tile.point {
+  background: url(/coin.5b24880d.png);
+  background-position: center;
+  background-size: 100%;
+}
+#board #pacman {
+  width: 20px;
+  height: 20px;
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 1;
+  transition: none;
+}
+#board #pacman.left {
+  transform: scale(-1, 1);
+}
+#board #pacman .head {
+  position: absolute;
+  top: -16px;
+  z-index: 1;
+  left: 50%;
+  transform: scale(1.3) translate(-25%, 0);
+}
+#board #pacman .body {
+  position: absolute;
+  left: 50%;
+  transform: scale(1.3) translate(-25%, 0);
+}
+
+/*# sourceMappingURL=/style.97fcb138.css.map */
