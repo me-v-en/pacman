@@ -9,6 +9,8 @@ body {
     align-items: center;
     width: min-content;
     margin: 50px auto;
+    background: url(./static/img/bg.jpg);
+    background-size: cover;
 
     .tile-row {
         display: flex;
@@ -20,34 +22,37 @@ body {
         height: 20px;
 
         &.wall {
-            background-color: black;
+            // background-color: black;
         }
 
         &.path {
-            background-color: #e0bfbf;
+            // background-color: #e0bfbf;
         }
 
         &.gate {
-            background-color: cyan;
+            // background-color: cyan;
         }
 
         &.home {
-            background-color: red;
+            // background-color: red;
         }
 
         &.point {
-            &::after {
-                content: '';
-                height: 5px;
-                width: 5px;
-                position: absolute;
-                top: 50%;
-                left: 50%;
-                transform: translate(-50%, -50%);
-                background-color: white;
-                border-radius: 5px;
+            background: url(./static/img/coin.png);
+            background-position: center;
+            background-size: 100%;
+            // &::after {
+            //     content: '';
+            //     height: 5px;
+            //     width: 5px;
+            //     position: absolute;
+            //     top: 50%;
+            //     left: 50%;
+            //     transform: translate(-50%, -50%);
+            //     background-color: yellow;
+            //     border-radius: 5px;
 
-            }
+            // }
         }
     }
 
@@ -59,6 +64,11 @@ body {
         left: 0;
         z-index: 1;
         transition: none;
+
+
+        &.left {
+            transform: scale(-1, 1);
+        }
 
         .head {
             position: absolute;
