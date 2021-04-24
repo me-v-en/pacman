@@ -1,4 +1,5 @@
 import Board from "./board";
+import { CANVAS_ELEMENT, CTX } from "./canvas";
 import Pacman from "./pacman";
 import Tile from "./tile";
 
@@ -22,10 +23,13 @@ export default class Game {
         this.lastRender = 0;
         // Possible state : STOPPED, START, GAME, CHASE
         this.GAME_STATE = 'START';
+
+        this.initGame();
     }
 
     initGame() {
         this.board.buildBoard();
+        this.draw();
     }
 
     startGameLoop() {
@@ -37,8 +41,8 @@ export default class Game {
 
     loop(timestamp) {
         let progress = timestamp - this.lastRender;
-        this.update(progress);
         this.draw();
+        this.update(progress);
 
         if (this.GAME_STATE !== 'STOPPED') {
             this.lastRender = timestamp;
@@ -49,12 +53,16 @@ export default class Game {
 
     update(progress) {
         // Update the state of the world for the elapsed time since last render
-        this.updatePacman();
+        // this.updatePacman();
     }
 
     draw() {
+        
+        CTX.fillStyle = 'white';
+        CTX.fillRect(0, 0, CANVAS_ELEMENT.width, CANVAS_ELEMENT.height);
         // Update the state of the world for the elapsed time since last render
-        this.pacman.drawPacman();
+        this.board.drawBoard();
+        // this.pacman.drawPacman();
     }
 
     bindEventHandler() {

@@ -1,14 +1,17 @@
-// coordX
-// coordY
-// hasPoint
-// hasBonusPoints
+import { CANVAS_ELEMENT, CTX, COIN_IMAGE } from "./canvas";
 
+let gameData = require("./data.json");
+const TILE_SIZE = gameData.tileSize;
 export default class Tile {
     constructor(initialData, coord) {
         //possible tileType : 'PATH', 'WALL', 'GATE', 'HOME'
         this.tileType = '';
         this.coord = coord;
         this.hasPoint = false;
+        console.log(coord);
+        if(coord === [0,0]){
+            console.log(COIN_IMAGE);
+        }
         
         switch (initialData) {
             case 'X':
@@ -27,21 +30,15 @@ export default class Tile {
             default:
                 break;
         }
-
-        this.DOMElement = this.createTileElement();
     }
 
-    createTileElement(){
-        let tileElement = document.createElement("div");
-        tileElement.className = `tile ${this.tileType.toLowerCase()} ${this.hasPoint ?  'point' : ''}`;
-        tileElement.id = `tile-${this.coord[0]}-${this.coord[1]}`;
-
-        document.getElementById("tile-row-"+this.coord[0]).appendChild(tileElement);
-        return tileElement;
-    }
-
+   
     removePoint(){
         this.hasPoint = false;
-        this.DOMElement.classList.remove('point');
+    }
+    
+    drawTile(){
+        // console.log('drawTile ', this.coord);
+        CTX.drawImage(COIN_IMAGE, this.coord[1], this.coord[0], this.tileSize, this.tileSize);     
     }
 }

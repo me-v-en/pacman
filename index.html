@@ -15,19 +15,19 @@
 </head>
 
 <body>
-    <!--[if lt IE 7]>
-            <p class="browsehappy">You are using an <strong>outdated</strong> browser. Please <a href="#">upgrade your browser</a> to improve your experience.</p>
-        <![endif]-->
+    >
 
-    <div id="board">
-        <div id="pacman">
-            <img src="static/img/head.png" class="head">
-            <img src="static/img/body.png" class="body">
+    <canvas id="canvas" width="840" height="930"></canvas>
+        <h3 id="score"></h3>
+
+        <div class="images">
+            <img src="img/bg.jpg" id="bgBoard" aria-hidden="true">
+            <img src="img/head.png" id="pacmanHead" aria-hidden="true">
+            <img src="img/body.png" id="pacmanBody" aria-hidden="true">
+            <img src="img/coin.png" id="coin" aria-hidden="true">
         </div>
-    </div>
-    <h3 id="score"></h3>
 
-    <script src="script/index.js" async defer></script>
+        <script src="script/index.js" async defer></script>
 </body>
 
 </html>

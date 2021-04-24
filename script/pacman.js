@@ -3,7 +3,8 @@ const TILE_SIZE = gameData.tileSize;
 const ANIMATION_DURATION = gameData.animationDuration;
 
 export default class Pacman {
-    constructor(coord) {
+    constructor(ctx,coord) {
+        this.ctx = ctx;
         this.reinitPacman();
     }
 
@@ -18,10 +19,9 @@ export default class Pacman {
         this.animTimestamp = null;
         this.direction = '';
         this.userInputDirection = '';
-        this.DOMPacman = document.getElementById('pacman');
-        this.DOMPacmanHead = document.querySelector('#pacman .head');
-        this.DOMPacmanBody = document.querySelector('#pacman .body');
-        this.drawPacman();
+        // this.DOMPacman = document.getElementById('pacman');
+        // this.DOMPacmanHead = document.querySelector('#pacman .head');
+        // this.DOMPacmanBody = document.querySelector('#pacman .body');
     }
 
     // animationIsPending(){    

@@ -2,24 +2,33 @@
 // Dimensions : 28 x 31
 // COORD [x,y]
 import Tile from './tile';
+import {
+    CANVAS_ELEMENT,
+    CTX,
+    BG_IMAGE
+} from "./canvas";
 
-import {modulo} from './utils';
+import {
+    modulo
+} from './utils';
 
 let gameData = require("./data.json");
 const BOARD_ARRAY = gameData.boardArray;
 const BOARD_WIDTH = gameData.boardArray[0].length;
 const BOARD_HEIGHT = gameData.boardArray.length;
+const CANVAS_WIDTH = gameData.canvasWidth;
+const CANVAS_HEIGHT = gameData.canvasHeight;
 
 export default class Board {
     constructor() {
         this.boardTiles = [];
+        this.drawBoard();
     }
 
     buildBoard() {
         this.boardTiles = [];
         for (let i = 0; i < BOARD_HEIGHT; i++) {
             let line = [];
-            this.createRowElement(i);
             for (let j = 0; j < BOARD_WIDTH; j++) {
                 let tile = new Tile(BOARD_ARRAY[i][j], [i, j]);
                 line.push(tile);
@@ -28,19 +37,26 @@ export default class Board {
         }
     }
 
-    createRowElement(i) {
-        let DOMrow = document.createElement("div");
-        DOMrow.classList = "tile-row";
-        DOMrow.id = "tile-row-" + i;
-        document.getElementById("board").appendChild(DOMrow);
-    }
-
-    getTile(coord){
-        if(coord){
+    getTile(coord) {
+        if (coord) {
             let coordY = modulo(coord[0], BOARD_HEIGHT);
             let coordX = modulo(coord[1], BOARD_WIDTH);
-        return this.boardTiles[coordY][coordX];
+            return this.boardTiles[coordY][coordX];
         }
+    }
+
+    drawBoard() {
+        // CTX.drawImage(this.bgImage, 0, 0, CANVAS_ELEMENT.width, CANVAS_ELEMENT.height);
+        this.drawTiles();
+    }
+
+    drawTiles() {
+        this.boardTiles.forEach((row) => {
+            row.forEach((tile) => {
+                tile.drawTile();
+            })
+
+        })
     }
 
 }
