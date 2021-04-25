@@ -3,144 +3,161 @@ import { CANVAS_ELEMENT, CTX } from "./canvas";
 import Pacman from "./pacman";
 import Tile from "./tile";
 
-import {
-    modulo,
-    DIRECTION_MATRICES,
-    addCoord
-} from './utils';
-
+import { modulo, DIRECTION_MATRICES, addCoord } from "./utils";
 
 export default class Game {
+  constructor() {
+    this.board = new Board();
+    this.pacman = new Pacman();
 
-    constructor() {
-        this.board = new Board();
-        this.pacman = new Pacman();
+    this.scoreElement = document.getElementById("score");
 
-        this.scoreElement = document.getElementById('score');
+    this.score = 0;
+    // Possible state : STOPPED, START, GAME, CHASE
+    this.gameState = "START";
 
-        this.score = 0;
-        // time since the start of the game loop
-        this.lastRender = 0;
-        // Possible state : STOPPED, START, GAME, CHASE
-        this.GAME_STATE = 'START';
+    this.initGame();
+  }
 
-        this.initGame();
+  initGame() {
+    this.board.initBoard();
+    this.pacman.initPacman();
+
+    this.draw();
+  }
+
+  startGameLoop() {
+    this.bindEventHandler();
+    window.requestAnimationFrame(this.loop.bind(this));
+  }
+
+  loop(timestamp) {
+    let progress = timestamp - this.lastRender;
+    this.draw();
+    this.update(progress);
+
+    window.requestAnimationFrame(this.loop.bind(this));
+  }
+
+  update(progress) {
+    // Update the state of the world for the elapsed time since last render
+    this.updatePacman();
+  }
+
+  draw() {
+    // Reinit the canvas
+    CTX.fillStyle = "#2c2a2a";
+    CTX.fillRect(0, 0, CANVAS_ELEMENT.width, CANVAS_ELEMENT.height);
+    // Update the state of the world for the elapsed time since last render
+    this.board.drawBoard();
+    this.pacman.drawPacman();
+  }
+
+  updatePacman() {
+    // If animation still happening, leave
+    if (!this.pacman.isAnimationFinished()) {
+      return;
     }
 
-    initGame() {
-        this.board.buildBoard();
-        this.draw();
+    // ADD SCORE
+    this.addPointOfCurrentPacmanTile();
+    // If animation is still happening
+
+    let nextTile = this.computePathPacman();
+    if (nextTile) {
+      this.pacman.setTargetCoord(nextTile.coord);
+    } else {
+      // If no valid target tile, stop pacman
+      this.pacman.direction = "";
+      this.pacman.state = "IDLE";
+    }
+  }
+
+  computePathPacman() {
+    // If no direction given, leave
+    if (!this.pacman.direction && !this.pacman.userInputDirection) {
+      return;
     }
 
-    startGameLoop() {
-        this.pacman.reinitPacman();
-        this.bindEventHandler();
-        this.lastRender = 0;
-        window.requestAnimationFrame(this.loop.bind(this));
+    // Get the next tile in the user given direction
+    let nextTileUserDirection = this.getNextTileInDirection(
+      this.pacman.currentCoord,
+      this.pacman.userInputDirection
+    );
+
+    // If the user direction is valid
+    if (nextTileUserDirection?.tileType === "PATH") {
+      this.pacman.confirmUserDirection();
+      return nextTileUserDirection;
     }
 
-    loop(timestamp) {
-        let progress = timestamp - this.lastRender;
-        this.draw();
-        this.update(progress);
+    // Get the next tile in the initial direction
+    let nextTileCurrentDirection = this.getNextTileInDirection(
+      this.pacman.currentCoord,
+      this.pacman.direction
+    );
 
-        if (this.GAME_STATE !== 'STOPPED') {
-            this.lastRender = timestamp;
-            window.requestAnimationFrame(this.loop.bind(this));
-        }
+    // If the initial direction is valid
+    if (nextTileCurrentDirection?.tileType === "PATH") {
+      this.pacman.setTargetCoord(nextTileCurrentDirection.coord);
+      return nextTileCurrentDirection;
+    }
+  }
 
+  setPacmanTargetTile(tile) {
+    this.pacman.setTargetCoord(tile.coord);
+  }
+
+  addPointOfCurrentPacmanTile() {
+    let currentTile = this.board.getTile(this.pacman.currentCoord);
+    if (currentTile.hasPoint) {
+      this.addScore(10);
+      currentTile.removePoint();
+    }
+  }
+
+  getNextTileInDirection(currentCoord, direction) {
+    if (!direction || !currentCoord) {
+      return false;
     }
 
-    update(progress) {
-        // Update the state of the world for the elapsed time since last render
-        // this.updatePacman();
-    }
+    let directionMatrice = DIRECTION_MATRICES[direction];
+    let coordToMove = addCoord(directionMatrice, currentCoord);
+    return this.board.getTile(coordToMove);
+  }
 
-    draw() {
-        
-        CTX.fillStyle = 'white';
-        CTX.fillRect(0, 0, CANVAS_ELEMENT.width, CANVAS_ELEMENT.height);
-        // Update the state of the world for the elapsed time since last render
-        this.board.drawBoard();
-        // this.pacman.drawPacman();
-    }
+  addScore(value) {
+    this.score += value;
+    this.scoreElement.textContent = this.score;
+  }
 
-    bindEventHandler() {
-        document.addEventListener("keyup", this.keyupEventHandler.bind(this));
-    }
+  bindEventHandler() {
+    document.addEventListener("keyup", this.keyupEventHandler.bind(this));
+  }
 
-    unbindEventHandler() {
-        document.removeEventListener("keyup", this.keyupEventHandler);
-    }
+  unbindEventHandler() {
+    document.removeEventListener("keyup", this.keyupEventHandler);
+  }
 
-    keyupEventHandler(event) {
-        event.preventDefault();
-        let keycode = event.which;
+  keyupEventHandler(event) {
+    event.preventDefault();
+    let keycode = event.which;
 
-        // LEFT : ARROW_LEFT or Q
-        if (keycode === 37 || keycode === 81) {
-            this.pacman.setUserInputDirection("LEFT");
-        }
-        // RIGHT : ARROW_RIGHT or D
-        if (keycode === 39 || keycode === 68) {
-            this.pacman.setUserInputDirection("RIGHT");
-        }
-        // UP : ARROW_UP or Z
-        if (keycode === 38 || keycode === 90) {
-            this.pacman.setUserInputDirection("UP");
-        }
-        // DOWN : ARROW_DOWN or S
-        if (keycode === 40 || keycode === 83) {
-            this.pacman.setUserInputDirection("DOWN");
-        }
+    // LEFT : ARROW_LEFT or Q
+    if (keycode === 37 || keycode === 81) {
+      this.pacman.setUserInputDirection("LEFT");
     }
-
-    updatePacman() {
-        if (this.pacman.coordIsTargetCoord()) {
-            this.addPointOfCurrentPacmanTile();
-            // If animation is still happening
-            if (this.pacman.direction || this.pacman.userInputDirection) {
-                // if (!this.pacman.animationIsPending()) {
-                // Calcul of the next tile in the direction
-                let nextTile = this.getNextTileInDirection(this.pacman.currentCoord, this.pacman.userInputDirection);
-                if (nextTile && nextTile.tileType === 'PATH') {
-                    this.pacman.confirmUserDirection();
-                    this.pacman.setTargetCoord(nextTile.coord);
-                } else {
-                    let nextTile = this.getNextTileInDirection(this.pacman.currentCoord, this.pacman.direction);
-                    if (nextTile && nextTile.tileType === 'PATH') {
-                        this.pacman.setTargetCoord(nextTile.coord);
-                    } else {
-                        this.pacman.direction = '';
-                        this.pacman.state = 'IDLE';
-                    }
-                }
-            }
-        }
+    // RIGHT : ARROW_RIGHT or D
+    if (keycode === 39 || keycode === 68) {
+      this.pacman.setUserInputDirection("RIGHT");
     }
-    setPacmanTargetTile(tile) {
-        this.pacman.setTargetCoord(tile.coord);
+    // UP : ARROW_UP or Z
+    if (keycode === 38 || keycode === 90) {
+      this.pacman.setUserInputDirection("UP");
     }
-
-    addPointOfCurrentPacmanTile() {
-        let currentTile = this.board.getTile(this.pacman.currentCoord);
-        if (currentTile.hasPoint) {
-            this.addScore(10);
-            currentTile.removePoint();
-        }
+    // DOWN : ARROW_DOWN or S
+    if (keycode === 40 || keycode === 83) {
+      this.pacman.setUserInputDirection("DOWN");
     }
-
-    getNextTileInDirection(currentCoord, direction) {
-        if(direction && currentCoord){
-        let directionMatrice = DIRECTION_MATRICES[direction];
-        let coordToMove = addCoord(directionMatrice, currentCoord);
-        return this.board.getTile(coordToMove);
-        } else return false;
-    }
-
-    addScore(value) {
-        this.score += value;
-        this.scoreElement.textContent = this.score;
-    }
-
+  }
 }
