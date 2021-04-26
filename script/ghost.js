@@ -1,5 +1,5 @@
 import { CTX } from "./canvas";
-import{compareArrays} from "./utils";
+import{getDirectionFromCoord, compareArrays, substractCoord} from "./utils";
 
 const gameData = require("./data.json");
 const TILE_SIZE = gameData.tileSize;
@@ -36,9 +36,15 @@ this.ennemyData = ennemyData;
   setMovingCoord(coord) {
     this.movingCoord = coord;
     this.animTimestamp = new Date().getTime();
+    this.direction = this.computeDirection();
     window.setTimeout(() => {
       this.currentCoord = coord;
     }, ANIMATION_DURATION);
+  }
+
+  computeDirection(){
+    const directionCoord = substractCoord(this.currentCoord, this.movingCoord);
+    return getDirectionFromCoord(directionCoord);
   }
 
   isAnimationFinished() {

@@ -11,8 +11,20 @@ export const DIRECTION_MATRICES = {
 
 }
 
+export function getDirectionFromCoord(coord){
+    return Object.entries(DIRECTION_MATRICES).find(([direction, directionCoord])=>{
+        return compareArrays(coord, directionCoord);
+    })[0];
+    
+
+}
+
 export function addCoord(coord1, coord2) {
     return coord1.map((value, index) => value += coord2[index]);
+};
+
+export function substractCoord(coord1, coord2) {
+    return coord1.map((value, index) => value -= coord2[index]);
 };
 
 export function distanceBetweenCoords(coord1, coord2) {

@@ -8,7 +8,16 @@
     "ennemiesData":[
         {
             "initialCoord" : [13,13],
-            "initialTarget" : [13,11]
+            "initialTarget" : [13,11],
+            "scatterTarget" : [1,26],
+            "spawnTimeout" : 5000
+        },
+        {
+            "initialCoord" : [14,13],
+            "initialTarget" : [13,11],
+            "scatterTarget" : [1,1],
+            "spawnTimeout" : 10000
+
         }
     ],
     "boardArray": [

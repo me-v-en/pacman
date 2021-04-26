@@ -23,13 +23,18 @@ export default class Pacman {
     this.animTimestamp = null;
     this.direction = "";
     this.userInputDirection = "";
+    this.inputTimestamp = null;
   }
 
   setUserInputDirection(direction) {
     this.userInputDirection = direction;
-    window.setTimeout(() => {
-      this.userInputDirection = "";
-    }, 500);
+    this.inputTimestamp = new Date().getTime();
+  }
+
+  isUserInputValid(){
+    let timeSinceLastInput = new Date().getTime() - this.inputTimestamp;
+    if(timeSinceLastInput > 2000) return null;
+    return this.userInputDirection;
   }
 
   confirmUserDirection() {

@@ -29,8 +29,8 @@ export default class Board {
 
   getTile(coord) {
     if (coord) {
-      let coordX = modulo(coord[0], BOARD_HEIGHT);
-      let coordY = modulo(coord[1], BOARD_WIDTH);
+      let coordX = modulo(coord[0], BOARD_WIDTH);
+      let coordY = modulo(coord[1], BOARD_HEIGHT);
       return this.boardTiles[coordY][coordX];
     }
   }

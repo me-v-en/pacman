@@ -84,7 +84,7 @@ export default class Game {
 
   computePathPacman() {
     // If no direction given, leave
-    if (!this.pacman.direction && !this.pacman.userInputDirection) {
+    if (!this.pacman.direction && !this.pacman.isUserInputValid()) {
       return;
     }
 
@@ -132,14 +132,14 @@ export default class Game {
 
   updateEnnemy(ennemy){
     if(!ennemy.isAnimationFinished())return;
-    if(ennemy.isInitialTargetReached()){
-      this.getNewTarget(ennemy);
-    }
     // get all possible tiles for the ennemy
     const possibleTiles = this.getEnnemyPossibleTiles(ennemy);
-  
+    if(possibleTiles.length > 1 && ennemy.isInitialTargetReached()){
+      this.getNewTarget(ennemy);
+    }
     // Compute what is the closest possible tile to the target coord
     const tileToMove = this.computeNearestTileToTarget(ennemy, possibleTiles);
+    if(!tileToMove)return;
 
     // Set the target coord
     ennemy.setMovingCoord(tileToMove.coord);
@@ -147,7 +147,9 @@ export default class Game {
 
   getEnnemyPossibleTiles(ennemy){
     let currentCoord = ennemy.currentCoord;
-    let adjacentTiles = DIRECTIONS.map((direction)=>{
+    // Ennemies can't go backwards
+    let possibleDirections = DIRECTIONS.filter((dir)=>dir!=ennemy.direction);
+    let adjacentTiles = possibleDirections.map((direction)=>{
       return this.getNextTileInDirection(currentCoord, direction);
     });
 
@@ -210,11 +212,11 @@ export default class Game {
   }
 
   bindEventHandler() {
-    document.addEventListener("keyup", this.keyupEventHandler.bind(this));
+    document.addEventListener("keydown", this.keyupEventHandler.bind(this));
   }
 
   unbindEventHandler() {
-    document.removeEventListener("keyup", this.keyupEventHandler);
+    document.removeEventListener("keydown", this.keyupEventHandler);
   }
 
   keyupEventHandler(event) {
