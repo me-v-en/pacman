@@ -1,4 +1,5 @@
 import { CTX, COIN_IMAGE } from "./canvas";
+import {compareArrays} from "./utils";
 
 let gameData = require("./data.json");
 const TILE_SIZE = gameData.tileSize;
@@ -33,16 +34,23 @@ export default class Tile {
   }
 
   drawTile() {
+
     if (!this.hasPoint) {
       return;
     }
 
     CTX.drawImage(
       COIN_IMAGE,
-      this.coord[1] * TILE_SIZE,
       this.coord[0] * TILE_SIZE,
+      this.coord[1] * TILE_SIZE,
       TILE_SIZE,
       TILE_SIZE
     );
+
+    if(compareArrays(this.coord, [13,11])){
+      CTX.fillStyle = "green";
+      CTX.fillRect(this.coord[0] * TILE_SIZE, this.coord[1] * TILE_SIZE, TILE_SIZE, TILE_SIZE);
+    }
+    }
   }
-}
+

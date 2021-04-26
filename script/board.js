@@ -1,9 +1,5 @@
-// BOARD = [TILE]
-// Dimensions : 28 x 31
-// COORD [x,y]
 import Tile from "./tile";
 import { CANVAS_ELEMENT, CTX, BG_IMAGE } from "./canvas";
-
 import { modulo } from "./utils";
 
 let gameData = require("./data.json");
@@ -17,15 +13,14 @@ export default class Board {
   constructor() {
     this.boardTiles = [];
     this.initBoard();
-    this.drawBoard();
   }
 
   initBoard() {
     this.boardTiles = [];
-    for (let i = 0; i < BOARD_HEIGHT; i++) {
+    for (let y = 0; y < BOARD_HEIGHT; y++) {
       let line = [];
-      for (let j = 0; j < BOARD_WIDTH; j++) {
-        let tile = new Tile(BOARD_ARRAY[i][j], [i, j]);
+      for (let x = 0; x < BOARD_WIDTH; x++) {
+        let tile = new Tile(BOARD_ARRAY[y][x], [x, y]);
         line.push(tile);
       }
       this.boardTiles.push(line);
@@ -34,8 +29,8 @@ export default class Board {
 
   getTile(coord) {
     if (coord) {
-      let coordY = modulo(coord[0], BOARD_HEIGHT);
-      let coordX = modulo(coord[1], BOARD_WIDTH);
+      let coordX = modulo(coord[0], BOARD_HEIGHT);
+      let coordY = modulo(coord[1], BOARD_WIDTH);
       return this.boardTiles[coordY][coordX];
     }
   }

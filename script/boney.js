@@ -5,16 +5,17 @@ const TILE_SIZE = gameData.tileSize;
 const ANIMATION_DURATION = gameData.animationDuration;
 
 export default class Pacman {
-  constructor(coord) {
-    this.init(coord);
+  constructor(ctx, coord) {
+    this.ctx = ctx;
+    this.initPacman();
   }
 
-  init(coord = [1, 14]) {
+  initPacman(coord = [14, 1]) {
     // Actual coord of the pacman
     this.currentCoord = coord;
 
     // Coord where the pacman is moving to
-    this.movingCoord = coord;
+    this.targetCoord = coord;
 
     // Possible state : IDLE, MOVING, DEAD
     this.state = "IDLE";
@@ -41,9 +42,9 @@ export default class Pacman {
     this.direction = direction;
   }
 
-  setMovingCoord(coord) {
+  setTargetCoord(coord) {
     this.state = "MOVING";
-    this.movingCoord = coord;
+    this.targetCoord = coord;
     this.animTimestamp = new Date().getTime();
     window.setTimeout(() => {
       this.currentCoord = coord;
@@ -51,43 +52,38 @@ export default class Pacman {
   }
 
   isAnimationFinished() {
-    return this.currentCoord === this.movingCoord;
+    return this.currentCoord === this.targetCoord;
   }
 
   updateAnimation() {
     return null;
   }
 
-  draw() {
+  drawPacman() {
     let x, y;
-    [x, y] = this.getCoordToDraw();
-    this.drawOnCanvas(x, y);
-  }
-
-  getCoordToDraw(){
-    let x,y;
     if (this.state === "MOVING") {
       // Get the percentage of progress of the anim
       let animationProgress = this.getProgressOfAnimation();
       //Delta of the current tile and target tiles
-      let deltaX = this.movingCoord[0] - this.currentCoord[0];
-      let deltaY = this.movingCoord[1] - this.currentCoord[1];
+      let deltaY = this.targetCoord[0] - this.currentCoord[0];
+      let deltaX = this.targetCoord[1] - this.currentCoord[1];
 
       // Position based on the progress of the animation
-      x = this.currentCoord[0] + deltaX * animationProgress;
-      y = this.currentCoord[1] + deltaY * animationProgress;
+      y = this.currentCoord[0] + deltaY * animationProgress;
+      x = this.currentCoord[1] + deltaX * animationProgress;
 
       // Setting the position of the pacman
     }
     if (this.state === "IDLE") {
       // If idle, set the pacman at the position of the tile
-      x = this.currentCoord[0];
-      y = this.currentCoord[1];
+      y = this.currentCoord[0];
+      x = this.currentCoord[1];
     }
-    return[x,y];
+
+    this.drawImageOnCanvas(x, y);
   }
 
-  drawOnCanvas(x, y) {
+  drawImageOnCanvas(x, y) {
     CTX.drawImage(
       BODY_IMAGE,
       x * TILE_SIZE,

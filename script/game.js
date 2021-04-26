@@ -1,15 +1,17 @@
 import Board from "./board";
 import { CANVAS_ELEMENT, CTX } from "./canvas";
+import Boney from "./ghost";
 import Pacman from "./pacman";
 import Tile from "./tile";
 
-import { modulo, DIRECTION_MATRICES, addCoord } from "./utils";
+const gameData = require("./data.json");
+const ENNEMIES_DATA = gameData.ennemiesData;
+const DIRECTIONS = ['UP','DOWN','LEFT', 'RIGHT'];
+
+import { modulo, DIRECTION_MATRICES, addCoord, distanceBetweenCoords } from "./utils";
 
 export default class Game {
   constructor() {
-    this.board = new Board();
-    this.pacman = new Pacman();
-
     this.scoreElement = document.getElementById("score");
 
     this.score = 0;
@@ -20,8 +22,9 @@ export default class Game {
   }
 
   initGame() {
-    this.board.initBoard();
-    this.pacman.initPacman();
+    this.board = new Board();
+    this.pacman = new Pacman();
+    this.boneys = this.initEnnemies();
 
     this.draw();
   }
@@ -42,6 +45,7 @@ export default class Game {
   update(progress) {
     // Update the state of the world for the elapsed time since last render
     this.updatePacman();
+    this.updateEnnemies();
   }
 
   draw() {
@@ -50,8 +54,13 @@ export default class Game {
     CTX.fillRect(0, 0, CANVAS_ELEMENT.width, CANVAS_ELEMENT.height);
     // Update the state of the world for the elapsed time since last render
     this.board.drawBoard();
-    this.pacman.drawPacman();
+    this.pacman.draw();
+    this.drawEnnemies();
   }
+
+  ////////////////////////////////////
+  // PACMAN
+  ////////////////////////////////////
 
   updatePacman() {
     // If animation still happening, leave
@@ -65,7 +74,7 @@ export default class Game {
 
     let nextTile = this.computePathPacman();
     if (nextTile) {
-      this.pacman.setTargetCoord(nextTile.coord);
+      this.pacman.setMovingCoord(nextTile.coord);
     } else {
       // If no valid target tile, stop pacman
       this.pacman.direction = "";
@@ -99,22 +108,82 @@ export default class Game {
 
     // If the initial direction is valid
     if (nextTileCurrentDirection?.tileType === "PATH") {
-      this.pacman.setTargetCoord(nextTileCurrentDirection.coord);
+      this.pacman.setMovingCoord(nextTileCurrentDirection.coord);
       return nextTileCurrentDirection;
     }
   }
 
-  setPacmanTargetTile(tile) {
-    this.pacman.setTargetCoord(tile.coord);
+  ////////////////////////////////////
+  // GHOSTS
+  ////////////////////////////////////
+  initEnnemies() {
+    const boneys = [];
+    ENNEMIES_DATA.forEach((ennemyData)=>{
+      boneys.push(new Boney(ennemyData));
+    });
+    return boneys;
   }
 
-  addPointOfCurrentPacmanTile() {
-    let currentTile = this.board.getTile(this.pacman.currentCoord);
-    if (currentTile.hasPoint) {
-      this.addScore(10);
-      currentTile.removePoint();
-    }
+  updateEnnemies(){
+    this.boneys.forEach((boney)=>{
+      this.updateEnnemy(boney);
+    });
   }
+
+  updateEnnemy(ennemy){
+    if(!ennemy.isAnimationFinished())return;
+    if(ennemy.isInitialTargetReached()){
+      this.getNewTarget(ennemy);
+    }
+    // get all possible tiles for the ennemy
+    const possibleTiles = this.getEnnemyPossibleTiles(ennemy);
+  
+    // Compute what is the closest possible tile to the target coord
+    const tileToMove = this.computeNearestTileToTarget(ennemy, possibleTiles);
+
+    // Set the target coord
+    ennemy.setMovingCoord(tileToMove.coord);
+  }
+
+  getEnnemyPossibleTiles(ennemy){
+    let currentCoord = ennemy.currentCoord;
+    let adjacentTiles = DIRECTIONS.map((direction)=>{
+      return this.getNextTileInDirection(currentCoord, direction);
+    });
+
+    return adjacentTiles.filter((tile)=>{
+      return ennemy.isTilePossible(tile);
+    })
+  }
+
+  computeNearestTileToTarget(ennemy, possibleTiles){
+    let targetCoord = ennemy.targetCoord;
+    let closestDistance = null;
+    let closestTile = null;
+    
+    possibleTiles.forEach((tile)=>{
+      let distance = distanceBetweenCoords(tile.coord, ennemy.targetCoord);
+      if(closestDistance === null || distance < closestDistance){
+        closestDistance = distance;
+        closestTile = tile;
+      }
+    });
+    return closestTile;
+  }
+
+  getNewTarget(ennemy){
+    ennemy.justSpawned = false;
+    ennemy.targetCoord = this.pacman.movingCoord;
+  }
+
+
+
+  drawEnnemies(){
+    this.boneys.forEach((boney)=>{
+      boney.draw();
+    });
+  }
+
 
   getNextTileInDirection(currentCoord, direction) {
     if (!direction || !currentCoord) {
@@ -124,6 +193,15 @@ export default class Game {
     let directionMatrice = DIRECTION_MATRICES[direction];
     let coordToMove = addCoord(directionMatrice, currentCoord);
     return this.board.getTile(coordToMove);
+  }
+
+  addPointOfCurrentPacmanTile() {
+    let currentTile = this.board.getTile(this.pacman.currentCoord);
+
+    if (currentTile.hasPoint) {
+      this.addScore(10);
+      currentTile.removePoint();
+    }
   }
 
   addScore(value) {

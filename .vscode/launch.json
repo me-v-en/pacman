@@ -5,16 +5,12 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "type": "chrome",
-      "request": "launch",
-      "name": "Chromium",
-      "runtimeExecutable": "/usr/bin/chrome-gnome-shell",
-      "url": "http://localhost:1234",
-      "webRoot": "${workspaceFolder}",
-      "breakOnLoad": true,
-      "sourceMapPathOverrides": {
-        "../*": "${webRoot}/*"
-      }
+      "name": "Attach Chromium",
+      "port": 1234,
+      "request": "attach",
+      "type": "pwa-chrome",
+      "webRoot": "${workspaceFolder}"
     }
+
   ]
 }
