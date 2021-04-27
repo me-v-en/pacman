@@ -9,7 +9,7 @@ import Tile from "./tile";
 
 const gameData = require("./data.json");
 const ENNEMIES_DATA = gameData.ennemiesData;
-const DIRECTIONS = ['UP', 'DOWN', 'LEFT', 'RIGHT'];
+const DIRECTIONS = ['DOWN', 'UP', 'RIGHT', 'LEFT'];
 
 import {
   modulo,
@@ -44,7 +44,9 @@ export default class Game {
 
   loop(timestamp) {
     let progress = timestamp - this.lastRender;
-    this.draw();
+    this.lastRender = timestamp;
+
+    this.draw(progress, timestamp);
     this.update(progress, timestamp);
 
     window.requestAnimationFrame(this.loop.bind(this));
@@ -55,15 +57,15 @@ export default class Game {
     this.updatePacman();
     this.updateEnnemies(timestamp);
   }
-
-  draw() {
+  resou
+  draw(progress, timestamp) {
     // Reinit the canvas
     CTX.fillStyle = "#2c2a2a";
     CTX.fillRect(0, 0, CANVAS_ELEMENT.width, CANVAS_ELEMENT.height);
     // Update the state of the world for the elapsed time since last render
     this.board.drawBoard();
     this.pacman.draw();
-    this.drawEnnemies();
+    this.drawEnnemies(timestamp);
   }
 
   ////////////////////////////////////
@@ -160,7 +162,7 @@ export default class Game {
   getEnnemyPossibleTiles(ennemy) {
     let currentCoord = ennemy.currentCoord;
     // Ennemies can't go backwards
-    let possibleDirections = DIRECTIONS.filter((dir) => dir != ennemy.direction);
+    let possibleDirections = DIRECTIONS.filter((dir) => dir != ennemy.getOppositeDirection());
     let adjacentTiles = possibleDirections.map((direction) => {
       return this.getNextTileInDirection(currentCoord, direction);
     });
@@ -193,9 +195,9 @@ export default class Game {
 
 
 
-  drawEnnemies() {
+  drawEnnemies(timestamp) {
     this.boneys.forEach((boney) => {
-      boney.draw();
+      boney.draw(timestamp);
     });
   }
 

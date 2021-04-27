@@ -1,6 +1,9 @@
 import {
-  CTX
+  CTX,
+  BONEY_HEAD,
+  BONEY_BODY
 } from "./canvas";
+
 import {
   getDirectionFromCoord,
   compareArrays,
@@ -9,7 +12,11 @@ import {
 
 const gameData = require("./data.json");
 const TILE_SIZE = gameData.tileSize;
+const SPRITE_SIZE = gameData.spriteSize;
 const ANIMATION_DURATION = gameData.animationDuration;
+const STEP_DURATION = gameData.stepAnimationDuration;
+const FRAMES_STEP = gameData.framesStep;
+const DIRECTIONS = ['DOWN', 'RIGHT', 'UP', 'LEFT'];
 
 //STATE : SPAWN, SCATTER, CHASE
 export default class Boney {
@@ -38,12 +45,14 @@ export default class Boney {
 
     this.beginningGameTimestamp = null;
     this.animTimestamp = null;
+    this.stepAnimationTimeStamp = null;
+    this.stepAnimation = 0;
 
     this.state = 'SPAWN';
   }
 
-  canMove(timestamp){
-    if(!this.beginningGameTimestamp) {
+  canMove(timestamp) {
+    if (!this.beginningGameTimestamp) {
       this.beginningGameTimestamp = timestamp;
       return false;
     }
@@ -53,6 +62,26 @@ export default class Boney {
 
   setDirection(direction) {
     this.direction = direction;
+  }
+
+  getOppositeDirection(){
+    switch (this.direction){
+      case 'UP':
+        return 'DOWN';
+        break;
+      case 'DOWN':
+        return 'UP';
+        break;
+      case 'LEFT':
+        return 'RIGHT';
+        break;
+      case 'RIGHT':
+        return 'LEFT';
+        break;
+      default:
+        return null;
+    }
+
   }
 
   setMovingCoord(coord) {
@@ -83,7 +112,7 @@ export default class Boney {
   }
 
   computeDirection() {
-    const directionCoord = substractCoord(this.currentCoord, this.movingCoord);
+    const directionCoord = substractCoord(this.movingCoord, this.currentCoord);
     return getDirectionFromCoord(directionCoord);
   }
 
@@ -106,10 +135,13 @@ export default class Boney {
     return null;
   }
 
-  draw() {
+  draw(timestamp) {
+    if(!this.stepAnimationTimeStamp){
+      this.stepAnimationTimeStamp = timestamp;
+    }
     let x, y;
     [x, y] = this.getCoordToDraw();
-    this.drawOnCanvas(x, y);
+    this.drawOnCanvas(x, y, timestamp);
   }
 
   getCoordToDraw() {
@@ -132,23 +164,101 @@ export default class Boney {
     return [x, y];
   }
 
-  drawOnCanvas(x, y) {
-    CTX.fillStyle = "red";
-    CTX.fillRect(x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, TILE_SIZE);
-    // CTX.drawImage(
-    //   BODY_IMAGE,
-    //   x * TILE_SIZE,
-    //   (y + 0) * TILE_SIZE,
-    //   TILE_SIZE,
-    //   TILE_SIZE
-    // );
-    // CTX.drawImage(
-    //   HEAD_IMAGE,
-    //   x * TILE_SIZE,
-    //   (y - 0.4) * TILE_SIZE,
-    //   TILE_SIZE,
-    //   TILE_SIZE
-    // );
+  drawOnCanvas(x, y, timestamp) {
+    let currentStepDuration = timestamp - this.stepAnimationTimeStamp;
+    if(currentStepDuration > STEP_DURATION){
+      this.incrementStepAnimation(timestamp);
+    }
+    this.drawBody(x, y);
+    this.drawHead(x, y);
+  }
+
+  drawBody(x, y){
+    CTX.save();
+
+    x = x * TILE_SIZE;
+    y = y * TILE_SIZE;
+
+    let spriteIndex = 0;
+    let stepAnimation = this.stepAnimation;
+    let isReversed = false;
+
+    if(this.direction === 'LEFT' || this.direction === 'RIGHT'){
+      spriteIndex = 2;
+    }
+
+    if (this.direction === 'LEFT') {
+      isReversed = true;
+    }
+
+    if(stepAnimation > 7){
+      spriteIndex++;
+      stepAnimation = stepAnimation % 8;
+    }
+
+    if (isReversed) {
+      CTX.translate( x + TILE_SIZE, y);
+      CTX.scale(-1, 1);
+      x = 0;
+      y= 0
+    }
+
+    CTX.drawImage(
+      BONEY_BODY,
+      stepAnimation * SPRITE_SIZE,
+      spriteIndex * SPRITE_SIZE,
+      TILE_SIZE,
+      TILE_SIZE,
+      x,
+      y,
+      TILE_SIZE,
+      TILE_SIZE,
+    );
+
+    CTX.restore();
+
+  }
+
+  drawHead(x, y) {
+    CTX.save();
+
+    x = x * TILE_SIZE;
+    y = (y - 0.3) * TILE_SIZE;
+
+      let spriteIndex = DIRECTIONS.findIndex((direction) => direction === this.direction);
+    if (spriteIndex === -1) spriteIndex = 0;
+    let isReversed = false;
+    if (this.direction === 'LEFT') {
+      isReversed = true;
+      spriteIndex = 1;
+    }
+
+    if (isReversed) {
+      CTX.translate( x + TILE_SIZE, y);
+      CTX.scale(-1, 1);
+      x = 0;
+      y= 0
+    }
+
+    CTX.drawImage(
+      BONEY_HEAD,
+      spriteIndex * SPRITE_SIZE,
+      0,
+      TILE_SIZE,
+      TILE_SIZE,
+      x,
+      y,
+      TILE_SIZE,
+      TILE_SIZE,
+    );
+
+    CTX.restore();
+  }
+
+  incrementStepAnimation(timestamp){
+    this.stepAnimation++;
+    this.stepAnimation = this.stepAnimation % FRAMES_STEP;
+    this.stepAnimationTimeStamp = timestamp;
   }
 
   getProgressOfAnimation() {

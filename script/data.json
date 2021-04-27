@@ -1,5 +1,8 @@
 {
-    "animationDuration": 100,
+    "animationDuration": 200,
+    "stepAnimationDuration": 50,
+    "framesStep": 10,
+    "spriteSize": 32,
     "tileSize": 30,
     "boardWidth": 28,
     "boardHeight": 31,
@@ -10,7 +13,7 @@
             "initialCoord" : [13,13],
             "initialTarget" : [13,11],
             "scatterTarget" : [1,26],
-            "spawnTimeout" : 5000
+            "spawnTimeout" : 0
         },
         {
             "initialCoord" : [14,13],

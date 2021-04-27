@@ -34,7 +34,6 @@ export default class Tile {
   }
 
   drawTile() {
-
     if (!this.hasPoint) {
       return;
     }
@@ -46,11 +45,6 @@ export default class Tile {
       TILE_SIZE,
       TILE_SIZE
     );
-
-    if(compareArrays(this.coord, [13,11])){
-      CTX.fillStyle = "green";
-      CTX.fillRect(this.coord[0] * TILE_SIZE, this.coord[1] * TILE_SIZE, TILE_SIZE, TILE_SIZE);
-    }
     }
   }
 

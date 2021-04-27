@@ -1,7 +1,8 @@
-import { CTX, HEAD_IMAGE, BODY_IMAGE } from "./canvas";
+import { CTX, ISAAC_HEAD, ISAAC_BODY } from "./canvas";
 
 const gameData = require("./data.json");
 const TILE_SIZE = gameData.tileSize;
+const SPRITE_SIZE = gameData.spriteSize;
 const ANIMATION_DURATION = gameData.animationDuration;
 
 export default class Pacman {
@@ -11,10 +12,10 @@ export default class Pacman {
 
   init(coord = [1, 14]) {
     // Actual coord of the pacman
-    this.currentCoord = coord;
+  this.currentCoord = coord;
 
     // Coord where the pacman is moving to
-    this.movingCoord = coord;
+  this.movingCoord = coord;
 
     // Possible state : IDLE, MOVING, DEAD
     this.state = "IDLE";
@@ -93,15 +94,27 @@ export default class Pacman {
   }
 
   drawOnCanvas(x, y) {
+      // move to x + img's width
+      // ctx.translate(x+img.width,y);
+  
+      // scaleX by -1; this "trick" flips horizontally
+      // ctx.scale(-1,1);
+      
+      // draw the img
+      // no need for x,y since we've already translated
+      // ctx.drawImage(img,0,0);
+      
+      // always clean up -- reset transformations to default
+      // ctx.setTransform(1,0,0,1,0,0);
     CTX.drawImage(
-      BODY_IMAGE,
+      ISAAC_BODY,
       x * TILE_SIZE,
       (y + 0) * TILE_SIZE,
       TILE_SIZE,
       TILE_SIZE
     );
     CTX.drawImage(
-      HEAD_IMAGE,
+      ISAAC_HEAD,
       x * TILE_SIZE,
       (y - 0.4) * TILE_SIZE,
       TILE_SIZE,
