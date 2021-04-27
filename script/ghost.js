@@ -1,17 +1,24 @@
-import { CTX } from "./canvas";
-import{getDirectionFromCoord, compareArrays, substractCoord} from "./utils";
+import {
+  CTX
+} from "./canvas";
+import {
+  getDirectionFromCoord,
+  compareArrays,
+  substractCoord
+} from "./utils";
 
 const gameData = require("./data.json");
 const TILE_SIZE = gameData.tileSize;
 const ANIMATION_DURATION = gameData.animationDuration;
 
+//STATE : SPAWN, SCATTER, CHASE
 export default class Boney {
   constructor(coord) {
     this.init(coord);
   }
 
   init(ennemyData) {
-this.ennemyData = ennemyData;
+    this.ennemyData = ennemyData;
     // Actual coord
     this.currentCoord = ennemyData.initialCoord;
 
@@ -20,13 +27,28 @@ this.ennemyData = ennemyData;
 
     // Position of the gate to move to
     this.targetCoord = ennemyData.initialTarget;
+    this.scatterCoord = ennemyData.scatterTarget;
+    this.spawnTimeout = ennemyData.spawnTimeout;
     this.justSpawned = true;
 
     // Timestamp fo the start of the animation
     this.direction = "";
     this.userInputDirection = "";
 
+
+    this.beginningGameTimestamp = null;
     this.animTimestamp = null;
+
+    this.state = 'SPAWN';
+  }
+
+  canMove(timestamp){
+    if(!this.beginningGameTimestamp) {
+      this.beginningGameTimestamp = timestamp;
+      return false;
+    }
+
+    return (timestamp - this.beginningGameTimestamp) > this.spawnTimeout;
   }
 
   setDirection(direction) {
@@ -42,7 +64,25 @@ this.ennemyData = ennemyData;
     }, ANIMATION_DURATION);
   }
 
-  computeDirection(){
+  updateState() {
+    switch (this.state) {
+      case 'SPAWN':
+        if (compareArrays(this.currentCoord, this.targetCoord)) {
+          this.targetCoord = this.scatterCoord;
+          this.state = 'SCATTER'
+        };
+        break;
+      case 'SCATTER':
+        if (compareArrays(this.currentCoord, this.scatterCoord)) {
+          this.state = 'CHASE'
+        };
+        break;
+      case 'CHASE':
+        break;
+    }
+  }
+
+  computeDirection() {
     const directionCoord = substractCoord(this.currentCoord, this.movingCoord);
     return getDirectionFromCoord(directionCoord);
   }
@@ -51,20 +91,15 @@ this.ennemyData = ennemyData;
     return this.currentCoord === this.movingCoord;
   }
 
-  isTargetReached(){
-      return this.currentCoord === this.currentCoord;
+  isTargetReached() {
+    return this.currentCoord === this.currentCoord;
   }
 
-  isInitialTargetReached(){
-    return !this.justSpawned || compareArrays(this.ennemyData.initialTarget, this.currentCoord);
-  }
-
-
-  isTilePossible(tile){
-      if(this.justSpawned){
-          return ['PATH', 'GATE', 'HOME'].includes(tile.tileType);
-      }
-      return tile?.tileType === "PATH";
+  isTilePossible(tile) {
+    if (this.justSpawned) {
+      return ['PATH', 'GATE', 'HOME'].includes(tile.tileType);
+    }
+    return tile ?.tileType === "PATH";
   }
 
   updateAnimation() {
@@ -79,8 +114,8 @@ this.ennemyData = ennemyData;
 
   getCoordToDraw() {
     let x, y;
-    if(this.isAnimationFinished()){
-        return this.currentCoord;
+    if (this.isAnimationFinished()) {
+      return this.currentCoord;
     }
     // Get the percentage of progress of the anim
     let animationProgress = this.getProgressOfAnimation();
@@ -94,7 +129,7 @@ this.ennemyData = ennemyData;
     y = this.currentCoord[1] + deltaY * animationProgress;
 
     // Setting the position of the pacman
-return [x,y];
+    return [x, y];
   }
 
   drawOnCanvas(x, y) {

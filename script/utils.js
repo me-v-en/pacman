@@ -1,7 +1,7 @@
-export function modulo(n, m) {
-    var mod = ((n % m) + m) % m;
-    return mod < 0 ? mod + Math.abs(m) : mod;
-};
+let gameData = require("./data.json");
+const CANVAS_WIDTH = gameData.canvasWidth;
+const CANVAS_HEIGHT = gameData.canvasHeight;
+
 
 export const DIRECTION_MATRICES = {
     'LEFT' : [-1, 0],
@@ -10,6 +10,15 @@ export const DIRECTION_MATRICES = {
     'DOWN' : [0, 1]
 
 }
+
+export function modulo(n, m) {
+    var mod = ((n % m) + m) % m;
+    return mod < 0 ? mod + Math.abs(m) : mod;
+};
+
+export function moduloCoord(coord) {
+    return [modulo(coord[0], CANVAS_WIDTH), modulo(coord[1], CANVAS_HEIGHT)]
+};
 
 export function getDirectionFromCoord(coord){
     return Object.entries(DIRECTION_MATRICES).find(([direction, directionCoord])=>{
@@ -35,7 +44,7 @@ export function distanceBetweenCoords(coord1, coord2) {
 
 export function compareArrays(a, b){
   // if length is not equal
-  if(a.length != b.length)   return false;
+  if(a?.length != b?.length)   return false;
 
   // comapring each element of array
    for(var i=0;i<a.length;i++){
