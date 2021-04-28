@@ -1,10 +1,11 @@
-import { CTX, ISAAC_HEAD, ISAAC_BODY } from "./canvas";
+import { CTX, ISAAC_SPRITE } from "./canvas";
 
 const gameData = require("./data.json");
 const TILE_SIZE = gameData.tileSize;
 const SPRITE_SIZE = gameData.spriteSize;
 const ANIMATION_DURATION = gameData.animationDuration;
-
+const STEP_DURATION = gameData.stepAnimationDuration;
+const FRAMES_STEP = gameData.framesStep;
 export default class Pacman {
   constructor(coord) {
     this.init(coord);
@@ -23,6 +24,8 @@ export default class Pacman {
     // Timestamp fo the start of the animation
     this.animTimestamp = null;
     this.direction = "";
+    this.stepAnimationTimeStamp = null;
+    this.stepAnimation = 0;
     this.userInputDirection = "";
     this.inputTimestamp = null;
   }
@@ -64,10 +67,13 @@ export default class Pacman {
     return null;
   }
 
-  draw() {
+  draw(timestamp) {
+    if(!this.stepAnimationTimeStamp){
+      this.stepAnimationTimeStamp = timestamp;
+    }
     let x, y;
     [x, y] = this.getCoordToDraw();
-    this.drawOnCanvas(x, y);
+    this.drawOnCanvas(x, y, timestamp);
   }
 
   getCoordToDraw(){
@@ -93,33 +99,121 @@ export default class Pacman {
     return[x,y];
   }
 
-  drawOnCanvas(x, y) {
-      // move to x + img's width
-      // ctx.translate(x+img.width,y);
-  
-      // scaleX by -1; this "trick" flips horizontally
-      // ctx.scale(-1,1);
-      
-      // draw the img
-      // no need for x,y since we've already translated
-      // ctx.drawImage(img,0,0);
-      
-      // always clean up -- reset transformations to default
-      // ctx.setTransform(1,0,0,1,0,0);
+  drawOnCanvas(x, y, timestamp) {
+    let currentStepDuration = timestamp - this.stepAnimationTimeStamp;
+    if(currentStepDuration > STEP_DURATION){
+      this.incrementStepAnimation(timestamp);
+    }
+
+    this.drawBody(x, y);
+    this.drawHead(x, y);
+  }
+
+
+  drawBody(x, y){
+    CTX.save();
+
+    x = x * TILE_SIZE;
+    y = (y - 0.05) * TILE_SIZE;
+
+    let spriteIndex = 0;
+    let stepAnimation = this.stepAnimation;
+    let stepAnimationShift = 7;
+    let stepAnimationModulo = 8;
+    let isReversed = false;
+
+    if(this.direction === 'LEFT' || this.direction === 'RIGHT'){
+      spriteIndex = 2;
+      stepAnimationShift = 0;
+
+    }
+
+    if (this.direction === 'LEFT') {
+      isReversed = true;
+    }
+
+    stepAnimation += stepAnimationShift;
+
+    if(stepAnimation >= stepAnimationModulo){
+      spriteIndex++;
+      stepAnimation = stepAnimation % stepAnimationModulo;
+    }
+
+    if (isReversed) {
+      CTX.translate( x + TILE_SIZE, y);
+      CTX.scale(-1, 1);
+      x = 0;
+      y= 0
+    }
+
     CTX.drawImage(
-      ISAAC_BODY,
-      x * TILE_SIZE,
-      (y + 0) * TILE_SIZE,
+      ISAAC_SPRITE,
+      stepAnimation * SPRITE_SIZE,
+      spriteIndex * SPRITE_SIZE,
       TILE_SIZE,
-      TILE_SIZE
+      TILE_SIZE,
+      x,
+      y,
+      TILE_SIZE,
+      TILE_SIZE,
     );
+
+    CTX.restore();
+
+  }
+
+  drawHead(x, y) {
+    CTX.save();
+
+    x = x * TILE_SIZE;
+    y = (y - 0.4) * TILE_SIZE;
+
+    let spriteIndex = 0;
+    let stepAnimation = this.stepAnimation >= 8 ? 1 : 0;
+    let isReversed = false;
+    let stepAnimationShift = 0;
+
+    if (this.direction === 'UP') {
+      stepAnimationShift = 4;
+    }
+    if (this.direction === 'RIGHT') {
+      stepAnimationShift = 2;
+    }
+    if (this.direction === 'LEFT') {
+      stepAnimationShift = 2;
+      isReversed = true;
+    }
+
+
+
+    stepAnimation += stepAnimationShift;
+
+    if (isReversed) {
+      CTX.translate( x + TILE_SIZE, y);
+      CTX.scale(-1, 1);
+      x = 0;
+      y= 0
+    }
+
     CTX.drawImage(
-      ISAAC_HEAD,
-      x * TILE_SIZE,
-      (y - 0.4) * TILE_SIZE,
+      ISAAC_SPRITE,
+      stepAnimation * SPRITE_SIZE,
+      0,
       TILE_SIZE,
-      TILE_SIZE
+      TILE_SIZE,
+      x,
+      y,
+      TILE_SIZE,
+      TILE_SIZE,
     );
+
+    CTX.restore();
+  }
+
+  incrementStepAnimation(timestamp){
+    this.stepAnimation++;
+    this.stepAnimation = this.stepAnimation % FRAMES_STEP;
+    this.stepAnimationTimeStamp = timestamp;
   }
 
   getProgressOfAnimation() {

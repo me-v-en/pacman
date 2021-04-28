@@ -64,7 +64,7 @@ export default class Game {
     CTX.fillRect(0, 0, CANVAS_ELEMENT.width, CANVAS_ELEMENT.height);
     // Update the state of the world for the elapsed time since last render
     this.board.drawBoard();
-    this.pacman.draw();
+    this.pacman.draw(timestamp);
     this.drawEnnemies(timestamp);
   }
 
