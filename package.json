@@ -18,7 +18,7 @@
   },
   "scripts": {
     "dev": "parcel index.html",
-    "build": "parcel build index.html"
+    "build": "parcel build index.html --out-dir docs"
   },
   "staticFiles": {
     "staticPath": "static"
