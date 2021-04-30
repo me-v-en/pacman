@@ -17,4 +17,4 @@ module.exports={animationDuration:200,stepAnimationDuration:50,framesStep:10,spr
 },{"./board":"C0wJ","./canvas":"NRet","./ghost":"BRyw","./pacman":"fnOe","./tile":"zP0G","./data.json":"rOsU","./utils":"dURd"}],"fWRU":[function(require,module,exports) {
 "use strict";var e=t(require("./game"));function t(e){return e&&e.__esModule?e:{default:e}}function n(e){"complete"===document.readyState||"interactive"===document.readyState?setTimeout(e,1):document.addEventListener("DOMContentLoaded",e)}n(function(){var t=new e.default;t.initGame(),t.startGameLoop()});
 },{"./game":"ZxoE"}]},{},["fWRU"], null)
-//# sourceMappingURL=/script.cb3aa424.js.map
+//# sourceMappingURL=script.cb3aa424.js.map
