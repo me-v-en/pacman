@@ -7,4 +7,8 @@ body {
   display: none;
 }
 
+#canvas {
+  height: 100vh;
+}
+
 /*# sourceMappingURL=/style.97fcb138.css.map */

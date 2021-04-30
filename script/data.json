@@ -3,7 +3,7 @@
     "stepAnimationDuration": 50,
     "framesStep": 10,
     "spriteSize": 32,
-    "tileSize": 30,
+    "tileSize": 32,
     "boardWidth": 28,
     "boardHeight": 31,
     "canvasWidth": 840,

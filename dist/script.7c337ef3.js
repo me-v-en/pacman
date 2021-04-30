@@ -145,7 +145,7 @@ module.exports = {
   "stepAnimationDuration": 50,
   "framesStep": 10,
   "spriteSize": 32,
-  "tileSize": 30,
+  "tileSize": 32,
   "boardWidth": 28,
   "boardHeight": 31,
   "canvasWidth": 840,
@@ -1334,7 +1334,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "32915" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "34053" + '/');
 
   ws.onmessage = function (event) {
     checkedAssets = {};
