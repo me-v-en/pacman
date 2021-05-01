@@ -601,9 +601,9 @@ var Boney = /*#__PURE__*/function () {
       return this.currentCoord === this.movingCoord;
     }
   }, {
-    key: "isTargetReached",
-    value: function isTargetReached() {
-      return this.currentCoord === this.currentCoord;
+    key: "isEnnemyKilled",
+    value: function isEnnemyKilled(targetCoord) {
+      return (0, _utils.compareArrays)(targetCoord, this.currentCoord);
     }
   }, {
     key: "isTilePossible",
@@ -1087,8 +1087,6 @@ function _defineProperties(target, props) { for (var i = 0; i < props.length; i+
 
 function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
 
-function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
-
 var gameData = require("./data.json");
 
 var ENNEMIES_DATA = gameData.ennemiesData;
@@ -1097,8 +1095,6 @@ var DIRECTIONS = ['DOWN', 'UP', 'RIGHT', 'LEFT'];
 var Game = /*#__PURE__*/function () {
   function Game() {
     _classCallCheck(this, Game);
-
-    _defineProperty(this, "resou", void 0);
 
     this.scoreElement = document.getElementById("score");
     this.score = 0; // Possible state : STOPPED, START, GAME, CHASE
@@ -1112,8 +1108,9 @@ var Game = /*#__PURE__*/function () {
     value: function initGame() {
       this.board = new _board.default();
       this.pacman = new _pacman.default();
-      this.boneys = this.initEnnemies();
-      this.state;
+      this.boneys = this.initEnnemies(); // START, END
+
+      this.state = 'START';
       this.draw();
     }
   }, {
@@ -1135,8 +1132,35 @@ var Game = /*#__PURE__*/function () {
     key: "update",
     value: function update(progress, timestamp) {
       // Update the state of the world for the elapsed time since last render
-      this.updatePacman();
-      this.updateEnnemies(timestamp);
+      this.updateGameState();
+
+      if (this.gameState !== 'END') {
+        this.updatePacman();
+        this.updateEnnemies(timestamp);
+      }
+    }
+  }, {
+    key: "updateGameState",
+    value: function updateGameState() {
+      if (this.isPacmanDead()) {
+        this.gameState = 'END';
+      }
+    }
+  }, {
+    key: "isPacmanDead",
+    value: function isPacmanDead() {
+      var pacmanIsDead = false;
+
+      ennemyLoop: for (var i = 0; i < this.boneys.length; i++) {
+        var boney = this.boneys[i];
+
+        if (boney.isEnnemyKilled(this.pacman.currentCoord)) {
+          pacmanIsDead = true;
+          break ennemyLoop;
+        }
+      }
+
+      return pacmanIsDead;
     }
   }, {
     key: "draw",

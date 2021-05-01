@@ -33,7 +33,9 @@ export default class Game {
     this.board = new Board();
     this.pacman = new Pacman();
     this.boneys = this.initEnnemies();
-    this.state
+
+    // START, END
+    this.state = 'START';
 
     this.draw();
   }
@@ -55,10 +57,32 @@ export default class Game {
 
   update(progress, timestamp) {
     // Update the state of the world for the elapsed time since last render
-    this.updatePacman();
-    this.updateEnnemies(timestamp);
+    this.updateGameState();
+    if (this.gameState !== 'END') {
+      this.updatePacman();
+      this.updateEnnemies(timestamp);
+    }
   }
-  resou
+  
+  updateGameState() {
+    if (this.isPacmanDead()) {
+      this.gameState = 'END';
+    }
+  }
+
+
+  isPacmanDead() {
+    let pacmanIsDead = false;
+    ennemyLoop : for (let i = 0; i < this.boneys.length; i++){
+      let boney = this.boneys[i];
+      if (boney.isEnnemyKilled(this.pacman.currentCoord)) {
+        pacmanIsDead = true;
+        break ennemyLoop;
+      }
+    }
+    return pacmanIsDead;    
+  }
+
   draw(progress, timestamp) {
     // Reinit the canvas
     CTX.fillStyle = "#2c2a2a";

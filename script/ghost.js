@@ -120,8 +120,8 @@ export default class Boney {
     return this.currentCoord === this.movingCoord;
   }
 
-  isTargetReached() {
-    return this.currentCoord === this.currentCoord;
+  isEnnemyKilled(targetCoord) {
+    return compareArrays(targetCoord, this.currentCoord);
   }
 
   isTilePossible(tile) {
