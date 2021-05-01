@@ -68,12 +68,25 @@ export default class Pacman {
   }
 
   draw(timestamp) {
+    if (this.characterIsOutOfScreen()) {
+      return;
+    }
     if(!this.stepAnimationTimeStamp){
       this.stepAnimationTimeStamp = timestamp;
     }
     let x, y;
     [x, y] = this.getCoordToDraw();
     this.drawOnCanvas(x, y, timestamp);
+  }
+
+  characterIsOutOfScreen() {
+    if (this.movingCoord[0] === 27 && this.currentCoord[0] === 0) {
+      return true;
+    }
+    if (this.movingCoord[0] === 0 && this.currentCoord[0] === 27) {
+      return true;
+    }
+    return false;
   }
 
   getCoordToDraw(){
@@ -111,10 +124,12 @@ export default class Pacman {
 
 
   drawBody(x, y){
+    const incrementConst = 6;
+
     CTX.save();
 
-    x = x * TILE_SIZE;
-    y = (y - 0.05) * TILE_SIZE;
+    x = x * TILE_SIZE - incrementConst / 2;
+    y = (y - 0.1) * TILE_SIZE - incrementConst / 2;
 
     let spriteIndex = 0;
     let stepAnimation = this.stepAnimation;
@@ -154,8 +169,8 @@ export default class Pacman {
       TILE_SIZE,
       x,
       y,
-      TILE_SIZE,
-      TILE_SIZE,
+      TILE_SIZE + incrementConst,
+      TILE_SIZE + incrementConst,
     );
 
     CTX.restore();
@@ -163,10 +178,12 @@ export default class Pacman {
   }
 
   drawHead(x, y) {
+    const incrementConst = 6;
+
     CTX.save();
 
-    x = x * TILE_SIZE;
-    y = (y - 0.4) * TILE_SIZE;
+    x = x * TILE_SIZE - incrementConst / 2;
+    y = (y - 0.50) * TILE_SIZE - incrementConst / 2;
 
     let spriteIndex = 0;
     let stepAnimation = this.stepAnimation >= 8 ? 1 : 0;
@@ -203,8 +220,8 @@ export default class Pacman {
       TILE_SIZE,
       x,
       y,
-      TILE_SIZE,
-      TILE_SIZE,
+      TILE_SIZE + incrementConst,
+      TILE_SIZE + incrementConst,
     );
 
     CTX.restore();

@@ -136,12 +136,26 @@ export default class Boney {
   }
 
   draw(timestamp) {
+    if (this.characterIsOutOfScreen()) {
+      return;
+    }
     if(!this.stepAnimationTimeStamp){
       this.stepAnimationTimeStamp = timestamp;
     }
     let x, y;
     [x, y] = this.getCoordToDraw();
     this.drawOnCanvas(x, y, timestamp);
+  }
+
+
+  characterIsOutOfScreen() {
+    if (this.movingCoord[0] === 27 && this.currentCoord[0] === 0) {
+      return true;
+    }
+    if (this.movingCoord[0] === 0 && this.currentCoord[0] === 27) {
+      return true;
+    }
+    return false;
   }
 
   getCoordToDraw() {
@@ -174,10 +188,12 @@ export default class Boney {
   }
 
   drawBody(x, y){
+    const incrementConst = 6;
+
     CTX.save();
 
-    x = x * TILE_SIZE;
-    y = y * TILE_SIZE;
+    x = x * TILE_SIZE - incrementConst / 2;
+    y = (y - 0.2) * TILE_SIZE - incrementConst / 2;
 
     let spriteIndex = 0;
     let stepAnimation = this.stepAnimation;
@@ -211,8 +227,8 @@ export default class Boney {
       TILE_SIZE,
       x,
       y,
-      TILE_SIZE,
-      TILE_SIZE,
+      TILE_SIZE + incrementConst,
+      TILE_SIZE + incrementConst,
     );
 
     CTX.restore();
@@ -220,10 +236,12 @@ export default class Boney {
   }
 
   drawHead(x, y) {
+    const incrementConst = 6;
+
     CTX.save();
 
-    x = x * TILE_SIZE;
-    y = (y - 0.3) * TILE_SIZE;
+    x = x * TILE_SIZE - incrementConst / 2;
+    y = (y - 0.6) * TILE_SIZE - incrementConst / 2;
 
       let spriteIndex = DIRECTIONS.findIndex((direction) => direction === this.direction);
     if (spriteIndex === -1) spriteIndex = 0;
@@ -248,8 +266,8 @@ export default class Boney {
       TILE_SIZE,
       x,
       y,
-      TILE_SIZE,
-      TILE_SIZE,
+      TILE_SIZE + incrementConst,
+      TILE_SIZE + incrementConst,
     );
 
     CTX.restore();

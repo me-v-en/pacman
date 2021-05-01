@@ -21,12 +21,14 @@ export function moduloCoord(coord) {
 };
 
 export function getDirectionFromCoord(coord){
-    return Object.entries(DIRECTION_MATRICES).find(([direction, directionCoord])=>{
+    const directionObject = Object.entries(DIRECTION_MATRICES).find(([direction, directionCoord])=>{
         return compareArrays(coord, directionCoord);
-    })[0];
-    
-
+    });
+    if (directionObject) {
+    return directionObject[0];
+    }    
 }
+    
 
 export function addCoord(coord1, coord2) {
     return coord1.map((value, index) => value += coord2[index]);

@@ -33,6 +33,7 @@ export default class Game {
     this.board = new Board();
     this.pacman = new Pacman();
     this.boneys = this.initEnnemies();
+    this.state
 
     this.draw();
   }
@@ -215,7 +216,7 @@ export default class Game {
   addPointOfCurrentPacmanTile() {
     let currentTile = this.board.getTile(this.pacman.currentCoord);
 
-    if (currentTile.hasPoint) {
+    if (currentTile.hasPoint || currentTile.hasSuperPoint) {
       this.addScore(10);
       currentTile.removePoint();
     }
@@ -227,32 +228,35 @@ export default class Game {
   }
 
   bindEventHandler() {
-    document.addEventListener("keydown", this.keyupEventHandler.bind(this));
+    document.addEventListener("keydown", this.keydownEventHandler.bind(this));
   }
 
   unbindEventHandler() {
-    document.removeEventListener("keydown", this.keyupEventHandler);
+    document.removeEventListener("keydown", this.keydownEventHandler);
   }
 
-  keyupEventHandler(event) {
-    event.preventDefault();
+  keydownEventHandler(event) {
     let keycode = event.which;
 
     // LEFT : ARROW_LEFT or Q
     if (keycode === 37 || keycode === 81) {
       this.pacman.setUserInputDirection("LEFT");
+      event.preventDefault();
     }
     // RIGHT : ARROW_RIGHT or D
     if (keycode === 39 || keycode === 68) {
       this.pacman.setUserInputDirection("RIGHT");
+    event.preventDefault();
     }
     // UP : ARROW_UP or Z
     if (keycode === 38 || keycode === 90) {
       this.pacman.setUserInputDirection("UP");
+    event.preventDefault();
     }
     // DOWN : ARROW_DOWN or S
     if (keycode === 40 || keycode === 83) {
       this.pacman.setUserInputDirection("DOWN");
+    event.preventDefault();
     }
   }
 }

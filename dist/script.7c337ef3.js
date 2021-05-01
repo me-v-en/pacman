@@ -123,7 +123,7 @@ parcelRequire = (function (modules, cache, entry, globalName) {
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.BONEY_BODY = exports.BONEY_HEAD = exports.ISAAC_SPRITE = exports.COIN_IMAGE = exports.BG_IMAGE = exports.CTX = exports.CANVAS_ELEMENT = void 0;
+exports.BONEY_BODY = exports.BONEY_HEAD = exports.ISAAC_SPRITE = exports.PILL_IMAGE = exports.COIN_IMAGE = exports.BG_IMAGE = exports.CTX = exports.CANVAS_ELEMENT = void 0;
 var CANVAS_ELEMENT = document.getElementById("canvas");
 exports.CANVAS_ELEMENT = CANVAS_ELEMENT;
 var CTX = canvas.getContext("2d");
@@ -133,6 +133,8 @@ var BG_IMAGE = document.getElementById("bgBoard");
 exports.BG_IMAGE = BG_IMAGE;
 var COIN_IMAGE = document.getElementById("coin");
 exports.COIN_IMAGE = COIN_IMAGE;
+var PILL_IMAGE = document.getElementById("pill");
+exports.PILL_IMAGE = PILL_IMAGE;
 var ISAAC_SPRITE = document.getElementById("isaacSprite");
 exports.ISAAC_SPRITE = ISAAC_SPRITE;
 var BONEY_HEAD = document.getElementById("boneyHead");
@@ -151,17 +153,27 @@ module.exports = {
   "canvasWidth": 840,
   "canvasHeight": 930,
   "ennemiesData": [{
-    "initialCoord": [13, 13],
+    "initialCoord": [12, 13],
     "initialTarget": [13, 11],
     "scatterTarget": [1, 26],
-    "spawnTimeout": 5000
+    "spawnTimeout": 2000
+  }, {
+    "initialCoord": [13, 13],
+    "initialTarget": [13, 11],
+    "scatterTarget": [1, 1],
+    "spawnTimeout": 4000
   }, {
     "initialCoord": [14, 13],
     "initialTarget": [13, 11],
-    "scatterTarget": [1, 1],
-    "spawnTimeout": 10000
+    "scatterTarget": [26, 1],
+    "spawnTimeout": 6000
+  }, {
+    "initialCoord": [15, 13],
+    "initialTarget": [14, 11],
+    "scatterTarget": [26, 29],
+    "spawnTimeout": 8000
   }],
-  "boardArray": [["X", "X", "X", "X", "X", "X", "X", "X", "X", "X", "X", "X", "X", "X", "X", "X", "X", "X", "X", "X", "X", "X", "X", "X", "X", "X", "X", "X"], ["X", ".", ".", ".", ".", ".", ".", ".", ".", ".", ".", ".", ".", "X", "X", ".", ".", ".", ".", ".", ".", ".", ".", ".", ".", ".", ".", "X"], ["X", ".", "X", "X", "X", "X", ".", "X", "X", "X", "X", "X", ".", "X", "X", ".", "X", "X", "X", "X", "X", ".", "X", "X", "X", "X", ".", "X"], ["X", ".", "X", "X", "X", "X", ".", "X", "X", "X", "X", "X", ".", "X", "X", ".", "X", "X", "X", "X", "X", ".", "X", "X", "X", "X", ".", "X"], ["X", ".", "X", "X", "X", "X", ".", "X", "X", "X", "X", "X", ".", "X", "X", ".", "X", "X", "X", "X", "X", ".", "X", "X", "X", "X", ".", "X"], ["X", ".", ".", ".", ".", ".", ".", ".", ".", ".", ".", ".", ".", ".", ".", ".", ".", ".", ".", ".", ".", ".", ".", ".", ".", ".", ".", "X"], ["X", ".", "X", "X", "X", "X", ".", "X", "X", ".", "X", "X", "X", "X", "X", "X", "X", "X", ".", "X", "X", ".", "X", "X", "X", "X", ".", "X"], ["X", ".", "X", "X", "X", "X", ".", "X", "X", ".", "X", "X", "X", "X", "X", "X", "X", "X", ".", "X", "X", ".", "X", "X", "X", "X", ".", "X"], ["X", ".", ".", ".", ".", ".", ".", "X", "X", ".", ".", ".", ".", "X", "X", ".", ".", ".", ".", "X", "X", ".", ".", ".", ".", ".", ".", "X"], ["X", "X", "X", "X", "X", "X", ".", "X", "X", "X", "X", "X", ".", "X", "X", ".", "X", "X", "X", "X", "X", ".", "X", "X", "X", "X", "X", "X"], ["X", "X", "X", "X", "X", "X", ".", "X", "X", "X", "X", "X", ".", "X", "X", ".", "X", "X", "X", "X", "X", ".", "X", "X", "X", "X", "X", "X"], ["X", "X", "X", "X", "X", "X", ".", "X", "X", ".", ".", ".", ".", ".", ".", ".", ".", ".", ".", "X", "X", ".", "X", "X", "X", "X", "X", "X"], ["X", "X", "X", "X", "X", "X", ".", "X", "X", ".", "X", "X", "X", "-", "-", "X", "X", "X", ".", "X", "X", ".", "X", "X", "X", "X", "X", "X"], ["X", "X", "X", "X", "X", "X", ".", "X", "X", ".", "X", "h", "h", "h", "h", "h", "h", "X", ".", "X", "X", ".", "X", "X", "X", "X", "X", "X"], [".", ".", ".", ".", ".", ".", ".", ".", ".", ".", "X", "h", "h", "h", "h", "h", "h", "X", ".", ".", ".", ".", ".", ".", ".", ".", ".", "."], ["X", "X", "X", "X", "X", "X", ".", "X", "X", ".", "X", "h", "h", "h", "h", "h", "h", "X", ".", "X", "X", ".", "X", "X", "X", "X", "X", "X"], ["X", "X", "X", "X", "X", "X", ".", "X", "X", ".", "X", "X", "X", "X", "X", "X", "X", "X", ".", "X", "X", ".", "X", "X", "X", "X", "X", "X"], ["X", "X", "X", "X", "X", "X", ".", "X", "X", ".", ".", ".", ".", ".", ".", ".", ".", ".", ".", "X", "X", ".", "X", "X", "X", "X", "X", "X"], ["X", "X", "X", "X", "X", "X", ".", "X", "X", ".", "X", "X", "X", "X", "X", "X", "X", "X", ".", "X", "X", ".", "X", "X", "X", "X", "X", "X"], ["X", "X", "X", "X", "X", "X", ".", "X", "X", ".", "X", "X", "X", "X", "X", "X", "X", "X", ".", "X", "X", ".", "X", "X", "X", "X", "X", "X"], ["X", ".", ".", ".", ".", ".", ".", ".", ".", ".", ".", ".", ".", "X", "X", ".", ".", ".", ".", ".", ".", ".", ".", ".", ".", ".", ".", "X"], ["X", ".", "X", "X", "X", "X", ".", "X", "X", "X", "X", "X", ".", "X", "X", ".", "X", "X", "X", "X", "X", ".", "X", "X", "X", "X", ".", "X"], ["X", ".", "X", "X", "X", "X", ".", "X", "X", "X", "X", "X", ".", "X", "X", ".", "X", "X", "X", "X", "X", ".", "X", "X", "X", "X", ".", "X"], ["X", ".", ".", ".", "X", "X", ".", ".", ".", ".", ".", ".", ".", ".", ".", ".", ".", ".", ".", ".", ".", ".", "X", "X", ".", ".", ".", "X"], ["X", "X", "X", ".", "X", "X", ".", "X", "X", ".", "X", "X", "X", "X", "X", "X", "X", "X", ".", "X", "X", ".", "X", "X", ".", "X", "X", "X"], ["X", "X", "X", ".", "X", "X", ".", "X", "X", ".", "X", "X", "X", "X", "X", "X", "X", "X", ".", "X", "X", ".", "X", "X", ".", "X", "X", "X"], ["X", ".", ".", ".", ".", ".", ".", "X", "X", ".", ".", ".", ".", "X", "X", ".", ".", ".", ".", "X", "X", ".", ".", ".", ".", ".", ".", "X"], ["X", ".", "X", "X", "X", "X", "X", "X", "X", "X", "X", "X", ".", "X", "X", ".", "X", "X", "X", "X", "X", "X", "X", "X", "X", "X", ".", "X"], ["X", ".", "X", "X", "X", "X", "X", "X", "X", "X", "X", "X", ".", "X", "X", ".", "X", "X", "X", "X", "X", "X", "X", "X", "X", "X", ".", "X"], ["X", ".", ".", ".", ".", ".", ".", ".", ".", ".", ".", ".", ".", ".", ".", ".", ".", ".", ".", ".", ".", ".", ".", ".", ".", ".", ".", "X"], ["X", "X", "X", "X", "X", "X", "X", "X", "X", "X", "X", "X", "X", "X", "X", "X", "X", "X", "X", "X", "X", "X", "X", "X", "X", "X", "X", "X"]]
+  "boardArray": [["X", "X", "X", "X", "X", "X", "X", "X", "X", "X", "X", "X", "X", "X", "X", "X", "X", "X", "X", "X", "X", "X", "X", "X", "X", "X", "X", "X"], ["X", ".", ".", ".", ".", ".", ".", ".", ".", ".", ".", ".", ".", "X", "X", ".", ".", ".", ".", ".", ".", ".", ".", ".", ".", ".", ".", "X"], ["X", ".", "X", "X", "X", "X", ".", "X", "X", "X", "X", "X", ".", "X", "X", ".", "X", "X", "X", "X", "X", ".", "X", "X", "X", "X", ".", "X"], ["X", "O", "X", "X", "X", "X", ".", "X", "X", "X", "X", "X", ".", "X", "X", ".", "X", "X", "X", "X", "X", ".", "X", "X", "X", "X", "O", "X"], ["X", ".", "X", "X", "X", "X", ".", "X", "X", "X", "X", "X", ".", "X", "X", ".", "X", "X", "X", "X", "X", ".", "X", "X", "X", "X", ".", "X"], ["X", ".", ".", ".", ".", ".", ".", ".", ".", ".", ".", ".", ".", ".", ".", ".", ".", ".", ".", ".", ".", ".", ".", ".", ".", ".", ".", "X"], ["X", ".", "X", "X", "X", "X", ".", "X", "X", ".", "X", "X", "X", "X", "X", "X", "X", "X", ".", "X", "X", ".", "X", "X", "X", "X", ".", "X"], ["X", ".", "X", "X", "X", "X", ".", "X", "X", ".", "X", "X", "X", "X", "X", "X", "X", "X", ".", "X", "X", ".", "X", "X", "X", "X", ".", "X"], ["X", ".", ".", ".", ".", ".", ".", "X", "X", ".", ".", ".", ".", "X", "X", ".", ".", ".", ".", "X", "X", ".", ".", ".", ".", ".", ".", "X"], ["X", "X", "X", "X", "X", "X", ".", "X", "X", "X", "X", "X", ".", "X", "X", ".", "X", "X", "X", "X", "X", ".", "X", "X", "X", "X", "X", "X"], ["X", "X", "X", "X", "X", "X", ".", "X", "X", "X", "X", "X", ".", "X", "X", ".", "X", "X", "X", "X", "X", ".", "X", "X", "X", "X", "X", "X"], ["X", "X", "X", "X", "X", "X", ".", "X", "X", ".", ".", ".", ".", ".", ".", ".", ".", ".", ".", "X", "X", ".", "X", "X", "X", "X", "X", "X"], ["X", "X", "X", "X", "X", "X", ".", "X", "X", ".", "X", "X", "X", "-", "-", "X", "X", "X", ".", "X", "X", ".", "X", "X", "X", "X", "X", "X"], ["X", "X", "X", "X", "X", "X", ".", "X", "X", ".", "X", "h", "h", "h", "h", "h", "h", "X", ".", "X", "X", ".", "X", "X", "X", "X", "X", "X"], [".", ".", ".", ".", ".", ".", ".", ".", ".", ".", "X", "h", "h", "h", "h", "h", "h", "X", ".", ".", ".", ".", ".", ".", ".", ".", ".", "."], ["X", "X", "X", "X", "X", "X", ".", "X", "X", ".", "X", "h", "h", "h", "h", "h", "h", "X", ".", "X", "X", ".", "X", "X", "X", "X", "X", "X"], ["X", "X", "X", "X", "X", "X", ".", "X", "X", ".", "X", "X", "X", "X", "X", "X", "X", "X", ".", "X", "X", ".", "X", "X", "X", "X", "X", "X"], ["X", "X", "X", "X", "X", "X", ".", "X", "X", ".", ".", ".", ".", ".", ".", ".", ".", ".", ".", "X", "X", ".", "X", "X", "X", "X", "X", "X"], ["X", "X", "X", "X", "X", "X", ".", "X", "X", ".", "X", "X", "X", "X", "X", "X", "X", "X", ".", "X", "X", ".", "X", "X", "X", "X", "X", "X"], ["X", "X", "X", "X", "X", "X", ".", "X", "X", ".", "X", "X", "X", "X", "X", "X", "X", "X", ".", "X", "X", ".", "X", "X", "X", "X", "X", "X"], ["X", ".", ".", ".", ".", ".", ".", ".", ".", ".", ".", ".", ".", "X", "X", ".", ".", ".", ".", ".", ".", ".", ".", ".", ".", ".", ".", "X"], ["X", ".", "X", "X", "X", "X", ".", "X", "X", "X", "X", "X", ".", "X", "X", ".", "X", "X", "X", "X", "X", ".", "X", "X", "X", "X", ".", "X"], ["X", ".", "X", "X", "X", "X", ".", "X", "X", "X", "X", "X", ".", "X", "X", ".", "X", "X", "X", "X", "X", ".", "X", "X", "X", "X", ".", "X"], ["X", "O", ".", ".", "X", "X", ".", ".", ".", ".", ".", ".", ".", ".", ".", ".", ".", ".", ".", ".", ".", ".", "X", "X", ".", ".", "O", "X"], ["X", "X", "X", ".", "X", "X", ".", "X", "X", ".", "X", "X", "X", "X", "X", "X", "X", "X", ".", "X", "X", ".", "X", "X", ".", "X", "X", "X"], ["X", "X", "X", ".", "X", "X", ".", "X", "X", ".", "X", "X", "X", "X", "X", "X", "X", "X", ".", "X", "X", ".", "X", "X", ".", "X", "X", "X"], ["X", ".", ".", ".", ".", ".", ".", "X", "X", ".", ".", ".", ".", "X", "X", ".", ".", ".", ".", "X", "X", ".", ".", ".", ".", ".", ".", "X"], ["X", ".", "X", "X", "X", "X", "X", "X", "X", "X", "X", "X", ".", "X", "X", ".", "X", "X", "X", "X", "X", "X", "X", "X", "X", "X", ".", "X"], ["X", ".", "X", "X", "X", "X", "X", "X", "X", "X", "X", "X", ".", "X", "X", ".", "X", "X", "X", "X", "X", "X", "X", "X", "X", "X", ".", "X"], ["X", ".", ".", ".", ".", ".", ".", ".", ".", ".", ".", ".", ".", ".", ".", ".", ".", ".", ".", ".", ".", ".", ".", ".", ".", ".", ".", "X"], ["X", "X", "X", "X", "X", "X", "X", "X", "X", "X", "X", "X", "X", "X", "X", "X", "X", "X", "X", "X", "X", "X", "X", "X", "X", "X", "X", "X"]]
 };
 },{}],"script/utils.js":[function(require,module,exports) {
 "use strict";
@@ -216,13 +228,17 @@ function moduloCoord(coord) {
 ;
 
 function getDirectionFromCoord(coord) {
-  return Object.entries(DIRECTION_MATRICES).find(function (_ref) {
+  var directionObject = Object.entries(DIRECTION_MATRICES).find(function (_ref) {
     var _ref2 = _slicedToArray(_ref, 2),
         direction = _ref2[0],
         directionCoord = _ref2[1];
 
     return compareArrays(coord, directionCoord);
-  })[0];
+  });
+
+  if (directionObject) {
+    return directionObject[0];
+  }
 }
 
 function addCoord(coord1, coord2) {
@@ -289,6 +305,7 @@ var Tile = /*#__PURE__*/function () {
     this.tileType = "";
     this.coord = coord;
     this.hasPoint = false;
+    this.hasSuperPoint = false;
 
     switch (initialData) {
       case "X":
@@ -298,6 +315,11 @@ var Tile = /*#__PURE__*/function () {
       case ".":
         this.tileType = "PATH";
         this.hasPoint = true;
+        break;
+
+      case "O":
+        this.tileType = "PATH";
+        this.hasSuperPoint = true;
         break;
 
       case "-":
@@ -317,15 +339,20 @@ var Tile = /*#__PURE__*/function () {
     key: "removePoint",
     value: function removePoint() {
       this.hasPoint = false;
+      this.hasSuperPoint = false;
     }
   }, {
     key: "drawTile",
     value: function drawTile() {
-      if (!this.hasPoint) {
-        return;
+      if (this.hasPoint) {
+        _canvas.CTX.drawImage(_canvas.COIN_IMAGE, this.coord[0] * TILE_SIZE, this.coord[1] * TILE_SIZE, TILE_SIZE, TILE_SIZE);
       }
 
-      _canvas.CTX.drawImage(_canvas.COIN_IMAGE, this.coord[0] * TILE_SIZE, this.coord[1] * TILE_SIZE, TILE_SIZE, TILE_SIZE);
+      if (this.hasSuperPoint) {
+        var incrementConst = 16;
+
+        _canvas.CTX.drawImage(_canvas.PILL_IMAGE, this.coord[0] * TILE_SIZE - incrementConst / 2, this.coord[1] * TILE_SIZE - incrementConst / 2, TILE_SIZE + incrementConst, TILE_SIZE + incrementConst);
+      }
     }
   }]);
 
@@ -595,6 +622,10 @@ var Boney = /*#__PURE__*/function () {
   }, {
     key: "draw",
     value: function draw(timestamp) {
+      if (this.characterIsOutOfScreen()) {
+        return;
+      }
+
       if (!this.stepAnimationTimeStamp) {
         this.stepAnimationTimeStamp = timestamp;
       }
@@ -608,6 +639,19 @@ var Boney = /*#__PURE__*/function () {
       x = _this$getCoordToDraw2[0];
       y = _this$getCoordToDraw2[1];
       this.drawOnCanvas(x, y, timestamp);
+    }
+  }, {
+    key: "characterIsOutOfScreen",
+    value: function characterIsOutOfScreen() {
+      if (this.movingCoord[0] === 27 && this.currentCoord[0] === 0) {
+        return true;
+      }
+
+      if (this.movingCoord[0] === 0 && this.currentCoord[0] === 27) {
+        return true;
+      }
+
+      return false;
     }
   }, {
     key: "getCoordToDraw",
@@ -644,10 +688,12 @@ var Boney = /*#__PURE__*/function () {
   }, {
     key: "drawBody",
     value: function drawBody(x, y) {
+      var incrementConst = 6;
+
       _canvas.CTX.save();
 
-      x = x * TILE_SIZE;
-      y = y * TILE_SIZE;
+      x = x * TILE_SIZE - incrementConst / 2;
+      y = (y - 0.2) * TILE_SIZE - incrementConst / 2;
       var spriteIndex = 0;
       var stepAnimation = this.stepAnimation;
       var isReversed = false;
@@ -674,7 +720,7 @@ var Boney = /*#__PURE__*/function () {
         y = 0;
       }
 
-      _canvas.CTX.drawImage(_canvas.BONEY_BODY, stepAnimation * SPRITE_SIZE, spriteIndex * SPRITE_SIZE, TILE_SIZE, TILE_SIZE, x, y, TILE_SIZE, TILE_SIZE);
+      _canvas.CTX.drawImage(_canvas.BONEY_BODY, stepAnimation * SPRITE_SIZE, spriteIndex * SPRITE_SIZE, TILE_SIZE, TILE_SIZE, x, y, TILE_SIZE + incrementConst, TILE_SIZE + incrementConst);
 
       _canvas.CTX.restore();
     }
@@ -683,10 +729,12 @@ var Boney = /*#__PURE__*/function () {
     value: function drawHead(x, y) {
       var _this2 = this;
 
+      var incrementConst = 6;
+
       _canvas.CTX.save();
 
-      x = x * TILE_SIZE;
-      y = (y - 0.3) * TILE_SIZE;
+      x = x * TILE_SIZE - incrementConst / 2;
+      y = (y - 0.6) * TILE_SIZE - incrementConst / 2;
       var spriteIndex = DIRECTIONS.findIndex(function (direction) {
         return direction === _this2.direction;
       });
@@ -707,7 +755,7 @@ var Boney = /*#__PURE__*/function () {
         y = 0;
       }
 
-      _canvas.CTX.drawImage(_canvas.BONEY_HEAD, spriteIndex * SPRITE_SIZE, 0, TILE_SIZE, TILE_SIZE, x, y, TILE_SIZE, TILE_SIZE);
+      _canvas.CTX.drawImage(_canvas.BONEY_HEAD, spriteIndex * SPRITE_SIZE, 0, TILE_SIZE, TILE_SIZE, x, y, TILE_SIZE + incrementConst, TILE_SIZE + incrementConst);
 
       _canvas.CTX.restore();
     }
@@ -839,6 +887,10 @@ var Pacman = /*#__PURE__*/function () {
   }, {
     key: "draw",
     value: function draw(timestamp) {
+      if (this.characterIsOutOfScreen()) {
+        return;
+      }
+
       if (!this.stepAnimationTimeStamp) {
         this.stepAnimationTimeStamp = timestamp;
       }
@@ -852,6 +904,19 @@ var Pacman = /*#__PURE__*/function () {
       x = _this$getCoordToDraw2[0];
       y = _this$getCoordToDraw2[1];
       this.drawOnCanvas(x, y, timestamp);
+    }
+  }, {
+    key: "characterIsOutOfScreen",
+    value: function characterIsOutOfScreen() {
+      if (this.movingCoord[0] === 27 && this.currentCoord[0] === 0) {
+        return true;
+      }
+
+      if (this.movingCoord[0] === 0 && this.currentCoord[0] === 27) {
+        return true;
+      }
+
+      return false;
     }
   }, {
     key: "getCoordToDraw",
@@ -892,10 +957,12 @@ var Pacman = /*#__PURE__*/function () {
   }, {
     key: "drawBody",
     value: function drawBody(x, y) {
+      var incrementConst = 6;
+
       _canvas.CTX.save();
 
-      x = x * TILE_SIZE;
-      y = (y - 0.05) * TILE_SIZE;
+      x = x * TILE_SIZE - incrementConst / 2;
+      y = (y - 0.1) * TILE_SIZE - incrementConst / 2;
       var spriteIndex = 0;
       var stepAnimation = this.stepAnimation;
       var stepAnimationShift = 7;
@@ -927,17 +994,19 @@ var Pacman = /*#__PURE__*/function () {
         y = 0;
       }
 
-      _canvas.CTX.drawImage(_canvas.ISAAC_SPRITE, stepAnimation * SPRITE_SIZE, spriteIndex * SPRITE_SIZE, TILE_SIZE, TILE_SIZE, x, y, TILE_SIZE, TILE_SIZE);
+      _canvas.CTX.drawImage(_canvas.ISAAC_SPRITE, stepAnimation * SPRITE_SIZE, spriteIndex * SPRITE_SIZE, TILE_SIZE, TILE_SIZE, x, y, TILE_SIZE + incrementConst, TILE_SIZE + incrementConst);
 
       _canvas.CTX.restore();
     }
   }, {
     key: "drawHead",
     value: function drawHead(x, y) {
+      var incrementConst = 6;
+
       _canvas.CTX.save();
 
-      x = x * TILE_SIZE;
-      y = (y - 0.4) * TILE_SIZE;
+      x = x * TILE_SIZE - incrementConst / 2;
+      y = (y - 0.50) * TILE_SIZE - incrementConst / 2;
       var spriteIndex = 0;
       var stepAnimation = this.stepAnimation >= 8 ? 1 : 0;
       var isReversed = false;
@@ -967,7 +1036,7 @@ var Pacman = /*#__PURE__*/function () {
         y = 0;
       }
 
-      _canvas.CTX.drawImage(_canvas.ISAAC_SPRITE, stepAnimation * SPRITE_SIZE, 0, TILE_SIZE, TILE_SIZE, x, y, TILE_SIZE, TILE_SIZE);
+      _canvas.CTX.drawImage(_canvas.ISAAC_SPRITE, stepAnimation * SPRITE_SIZE, 0, TILE_SIZE, TILE_SIZE, x, y, TILE_SIZE + incrementConst, TILE_SIZE + incrementConst);
 
       _canvas.CTX.restore();
     }
@@ -1044,6 +1113,7 @@ var Game = /*#__PURE__*/function () {
       this.board = new _board.default();
       this.pacman = new _pacman.default();
       this.boneys = this.initEnnemies();
+      this.state;
       this.draw();
     }
   }, {
@@ -1232,7 +1302,7 @@ var Game = /*#__PURE__*/function () {
     value: function addPointOfCurrentPacmanTile() {
       var currentTile = this.board.getTile(this.pacman.currentCoord);
 
-      if (currentTile.hasPoint) {
+      if (currentTile.hasPoint || currentTile.hasSuperPoint) {
         this.addScore(10);
         currentTile.removePoint();
       }
@@ -1246,36 +1316,39 @@ var Game = /*#__PURE__*/function () {
   }, {
     key: "bindEventHandler",
     value: function bindEventHandler() {
-      document.addEventListener("keydown", this.keyupEventHandler.bind(this));
+      document.addEventListener("keydown", this.keydownEventHandler.bind(this));
     }
   }, {
     key: "unbindEventHandler",
     value: function unbindEventHandler() {
-      document.removeEventListener("keydown", this.keyupEventHandler);
+      document.removeEventListener("keydown", this.keydownEventHandler);
     }
   }, {
-    key: "keyupEventHandler",
-    value: function keyupEventHandler(event) {
-      event.preventDefault();
+    key: "keydownEventHandler",
+    value: function keydownEventHandler(event) {
       var keycode = event.which; // LEFT : ARROW_LEFT or Q
 
       if (keycode === 37 || keycode === 81) {
         this.pacman.setUserInputDirection("LEFT");
+        event.preventDefault();
       } // RIGHT : ARROW_RIGHT or D
 
 
       if (keycode === 39 || keycode === 68) {
         this.pacman.setUserInputDirection("RIGHT");
+        event.preventDefault();
       } // UP : ARROW_UP or Z
 
 
       if (keycode === 38 || keycode === 90) {
         this.pacman.setUserInputDirection("UP");
+        event.preventDefault();
       } // DOWN : ARROW_DOWN or S
 
 
       if (keycode === 40 || keycode === 83) {
         this.pacman.setUserInputDirection("DOWN");
+        event.preventDefault();
       }
     }
   }]);
@@ -1334,7 +1407,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "34053" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "44111" + '/');
 
   ws.onmessage = function (event) {
     checkedAssets = {};
