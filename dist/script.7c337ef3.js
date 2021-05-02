@@ -937,7 +937,7 @@ var PacmanBehaviour = /*#__PURE__*/function () {
 }();
 
 exports.default = PacmanBehaviour;
-},{"./data.json":"script/data.json","./state":"script/state.js"}],"script/pacman.js":[function(require,module,exports) {
+},{"./data.json":"script/data.json","./state":"script/state.js"}],"script/pacmanAnimation.js":[function(require,module,exports) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -946,8 +946,6 @@ Object.defineProperty(exports, "__esModule", {
 exports.default = void 0;
 
 var _canvas = require("./canvas");
-
-var _pacmanBehaviour = _interopRequireDefault(require("./pacmanBehaviour"));
 
 var _state = _interopRequireDefault(require("./state"));
 
@@ -979,12 +977,234 @@ var ANIMATION_DURATION = gameData.animationDuration;
 var STEP_DURATION = gameData.stepAnimationDuration;
 var FRAMES_STEP = gameData.framesStep;
 
+var PacmanAnimation = /*#__PURE__*/function () {
+  function PacmanAnimation(pacman) {
+    _classCallCheck(this, PacmanAnimation);
+
+    this.init(pacman);
+  }
+
+  _createClass(PacmanAnimation, [{
+    key: "init",
+    value: function init(pacman) {
+      this.pacman = pacman;
+      this.stepAnimationTimeStamp = null;
+      this.stepAnimation = 0;
+    }
+  }, {
+    key: "draw",
+    value: function draw(timestamp) {
+      if (this.characterIsOutOfScreen()) {
+        return;
+      }
+
+      if (!this.stepAnimationTimeStamp) {
+        this.stepAnimationTimeStamp = timestamp;
+      }
+
+      var x, y;
+
+      var _this$getCoordToDraw = this.getCoordToDraw();
+
+      var _this$getCoordToDraw2 = _slicedToArray(_this$getCoordToDraw, 2);
+
+      x = _this$getCoordToDraw2[0];
+      y = _this$getCoordToDraw2[1];
+      this.drawOnCanvas(x, y, timestamp);
+    }
+  }, {
+    key: "characterIsOutOfScreen",
+    value: function characterIsOutOfScreen() {
+      if (this.pacman.movingCoord[0] === 27 && this.pacman.currentCoord[0] === 0) {
+        return true;
+      }
+
+      if (this.pacman.movingCoord[0] === 0 && this.pacman.currentCoord[0] === 27) {
+        return true;
+      }
+
+      return false;
+    }
+  }, {
+    key: "getCoordToDraw",
+    value: function getCoordToDraw() {
+      var x, y;
+
+      if (this.pacman.state === "MOVING") {
+        // Get the percentage of progress of the anim
+        var animationProgress = this.getProgressOfAnimation(); //Delta of the current tile and target tiles
+
+        var deltaX = this.pacman.movingCoord[0] - this.pacman.currentCoord[0];
+        var deltaY = this.pacman.movingCoord[1] - this.pacman.currentCoord[1]; // Position based on the progress of the animation
+
+        x = this.pacman.currentCoord[0] + deltaX * animationProgress;
+        y = this.pacman.currentCoord[1] + deltaY * animationProgress; // Setting the position of the pacman
+      }
+
+      if (this.pacman.state === "IDLE") {
+        // If idle, set the pacman at the position of the tile
+        x = this.pacman.currentCoord[0];
+        y = this.pacman.currentCoord[1];
+      }
+
+      return [x, y];
+    }
+  }, {
+    key: "incrementStepAnimation",
+    value: function incrementStepAnimation(timestamp) {
+      this.stepAnimation++;
+      this.stepAnimation = this.stepAnimation % FRAMES_STEP;
+      this.stepAnimationTimeStamp = timestamp;
+    }
+  }, {
+    key: "getProgressOfAnimation",
+    value: function getProgressOfAnimation() {
+      var currentTimeStamp = new Date().getTime();
+      return (currentTimeStamp - this.pacman.animTimestamp) / ANIMATION_DURATION;
+    }
+  }, {
+    key: "drawOnCanvas",
+    value: function drawOnCanvas(x, y, timestamp) {
+      var currentStepDuration = timestamp - this.stepAnimationTimeStamp;
+
+      if (currentStepDuration > STEP_DURATION) {
+        this.incrementStepAnimation(timestamp);
+      }
+
+      this.drawBody(x, y);
+      this.drawHead(x, y);
+    }
+  }, {
+    key: "drawBody",
+    value: function drawBody(x, y) {
+      var incrementConst = 6;
+
+      _canvas.CTX.save();
+
+      x = x * TILE_SIZE - incrementConst / 2;
+      y = (y - 0.1) * TILE_SIZE - incrementConst / 2;
+      var spriteIndex = 0;
+      var stepAnimation = this.stepAnimation;
+      var stepAnimationShift = 7;
+      var stepAnimationModulo = 8;
+      var isReversed = false;
+
+      if (this.pacman.direction === 'LEFT' || this.pacman.direction === 'RIGHT') {
+        spriteIndex = 2;
+        stepAnimationShift = 0;
+      }
+
+      if (this.pacman.direction === 'LEFT') {
+        isReversed = true;
+      }
+
+      stepAnimation += stepAnimationShift;
+
+      if (stepAnimation >= stepAnimationModulo) {
+        spriteIndex++;
+        stepAnimation = stepAnimation % stepAnimationModulo;
+      }
+
+      if (isReversed) {
+        _canvas.CTX.translate(x + TILE_SIZE, y);
+
+        _canvas.CTX.scale(-1, 1);
+
+        x = 0;
+        y = 0;
+      }
+
+      _canvas.CTX.drawImage(_canvas.ISAAC_SPRITE, stepAnimation * SPRITE_SIZE, spriteIndex * SPRITE_SIZE, TILE_SIZE, TILE_SIZE, x, y, TILE_SIZE + incrementConst, TILE_SIZE + incrementConst);
+
+      _canvas.CTX.restore();
+    }
+  }, {
+    key: "drawHead",
+    value: function drawHead(x, y) {
+      var incrementConst = 6;
+
+      _canvas.CTX.save();
+
+      x = x * TILE_SIZE - incrementConst / 2;
+      y = (y - 0.50) * TILE_SIZE - incrementConst / 2;
+      var spriteIndex = 0;
+      var stepAnimation = this.stepAnimation >= 8 ? 1 : 0;
+      var isReversed = false;
+      var stepAnimationShift = 0;
+
+      if (this.pacman.direction === 'UP') {
+        stepAnimationShift = 4;
+      }
+
+      if (this.pacman.direction === 'RIGHT') {
+        stepAnimationShift = 2;
+      }
+
+      if (this.pacman.direction === 'LEFT') {
+        stepAnimationShift = 2;
+        isReversed = true;
+      }
+
+      stepAnimation += stepAnimationShift;
+
+      if (isReversed) {
+        _canvas.CTX.translate(x + TILE_SIZE, y);
+
+        _canvas.CTX.scale(-1, 1);
+
+        x = 0;
+        y = 0;
+      }
+
+      _canvas.CTX.drawImage(_canvas.ISAAC_SPRITE, stepAnimation * SPRITE_SIZE, 0, TILE_SIZE, TILE_SIZE, x, y, TILE_SIZE + incrementConst, TILE_SIZE + incrementConst);
+
+      _canvas.CTX.restore();
+    }
+  }]);
+
+  return PacmanAnimation;
+}();
+
+exports.default = PacmanAnimation;
+},{"./data.json":"script/data.json","./canvas":"script/canvas.js","./state":"script/state.js"}],"script/pacman.js":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = void 0;
+
+var _canvas = require("./canvas");
+
+var _pacmanBehaviour = _interopRequireDefault(require("./pacmanBehaviour"));
+
+var _pacmanAnimation = _interopRequireDefault(require("./pacmanAnimation"));
+
+var _state = _interopRequireDefault(require("./state"));
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
+
+function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
+
+var gameData = require("./data.json");
+
+var TILE_SIZE = gameData.tileSize;
+var SPRITE_SIZE = gameData.spriteSize;
+var ANIMATION_DURATION = gameData.animationDuration;
+var STEP_DURATION = gameData.stepAnimationDuration;
+var FRAMES_STEP = gameData.framesStep;
+
 var Pacman = /*#__PURE__*/function () {
   function Pacman(coord) {
     _classCallCheck(this, Pacman);
 
     this.init(coord);
     this.pacmanBehaviour = new _pacmanBehaviour.default(this);
+    this.pacmanAnimation = new _pacmanAnimation.default(this);
   }
 
   _createClass(Pacman, [{
@@ -998,10 +1218,7 @@ var Pacman = /*#__PURE__*/function () {
 
       this.state = "IDLE"; // Timestamp fo the start of the animation
 
-      this.animTimestamp = null;
       this.direction = "";
-      this.stepAnimationTimeStamp = null;
-      this.stepAnimation = 0;
       this.userInputDirection = "";
       this.inputTimestamp = null;
     }
@@ -1056,171 +1273,7 @@ var Pacman = /*#__PURE__*/function () {
   }, {
     key: "draw",
     value: function draw(timestamp) {
-      if (this.characterIsOutOfScreen()) {
-        return;
-      }
-
-      if (!this.stepAnimationTimeStamp) {
-        this.stepAnimationTimeStamp = timestamp;
-      }
-
-      var x, y;
-
-      var _this$getCoordToDraw = this.getCoordToDraw();
-
-      var _this$getCoordToDraw2 = _slicedToArray(_this$getCoordToDraw, 2);
-
-      x = _this$getCoordToDraw2[0];
-      y = _this$getCoordToDraw2[1];
-      this.drawOnCanvas(x, y, timestamp);
-    }
-  }, {
-    key: "characterIsOutOfScreen",
-    value: function characterIsOutOfScreen() {
-      if (this.movingCoord[0] === 27 && this.currentCoord[0] === 0) {
-        return true;
-      }
-
-      if (this.movingCoord[0] === 0 && this.currentCoord[0] === 27) {
-        return true;
-      }
-
-      return false;
-    }
-  }, {
-    key: "getCoordToDraw",
-    value: function getCoordToDraw() {
-      var x, y;
-
-      if (this.state === "MOVING") {
-        // Get the percentage of progress of the anim
-        var animationProgress = this.getProgressOfAnimation(); //Delta of the current tile and target tiles
-
-        var deltaX = this.movingCoord[0] - this.currentCoord[0];
-        var deltaY = this.movingCoord[1] - this.currentCoord[1]; // Position based on the progress of the animation
-
-        x = this.currentCoord[0] + deltaX * animationProgress;
-        y = this.currentCoord[1] + deltaY * animationProgress; // Setting the position of the pacman
-      }
-
-      if (this.state === "IDLE") {
-        // If idle, set the pacman at the position of the tile
-        x = this.currentCoord[0];
-        y = this.currentCoord[1];
-      }
-
-      return [x, y];
-    }
-  }, {
-    key: "drawOnCanvas",
-    value: function drawOnCanvas(x, y, timestamp) {
-      var currentStepDuration = timestamp - this.stepAnimationTimeStamp;
-
-      if (currentStepDuration > STEP_DURATION) {
-        this.incrementStepAnimation(timestamp);
-      }
-
-      this.drawBody(x, y);
-      this.drawHead(x, y);
-    }
-  }, {
-    key: "drawBody",
-    value: function drawBody(x, y) {
-      var incrementConst = 6;
-
-      _canvas.CTX.save();
-
-      x = x * TILE_SIZE - incrementConst / 2;
-      y = (y - 0.1) * TILE_SIZE - incrementConst / 2;
-      var spriteIndex = 0;
-      var stepAnimation = this.stepAnimation;
-      var stepAnimationShift = 7;
-      var stepAnimationModulo = 8;
-      var isReversed = false;
-
-      if (this.direction === 'LEFT' || this.direction === 'RIGHT') {
-        spriteIndex = 2;
-        stepAnimationShift = 0;
-      }
-
-      if (this.direction === 'LEFT') {
-        isReversed = true;
-      }
-
-      stepAnimation += stepAnimationShift;
-
-      if (stepAnimation >= stepAnimationModulo) {
-        spriteIndex++;
-        stepAnimation = stepAnimation % stepAnimationModulo;
-      }
-
-      if (isReversed) {
-        _canvas.CTX.translate(x + TILE_SIZE, y);
-
-        _canvas.CTX.scale(-1, 1);
-
-        x = 0;
-        y = 0;
-      }
-
-      _canvas.CTX.drawImage(_canvas.ISAAC_SPRITE, stepAnimation * SPRITE_SIZE, spriteIndex * SPRITE_SIZE, TILE_SIZE, TILE_SIZE, x, y, TILE_SIZE + incrementConst, TILE_SIZE + incrementConst);
-
-      _canvas.CTX.restore();
-    }
-  }, {
-    key: "drawHead",
-    value: function drawHead(x, y) {
-      var incrementConst = 6;
-
-      _canvas.CTX.save();
-
-      x = x * TILE_SIZE - incrementConst / 2;
-      y = (y - 0.50) * TILE_SIZE - incrementConst / 2;
-      var spriteIndex = 0;
-      var stepAnimation = this.stepAnimation >= 8 ? 1 : 0;
-      var isReversed = false;
-      var stepAnimationShift = 0;
-
-      if (this.direction === 'UP') {
-        stepAnimationShift = 4;
-      }
-
-      if (this.direction === 'RIGHT') {
-        stepAnimationShift = 2;
-      }
-
-      if (this.direction === 'LEFT') {
-        stepAnimationShift = 2;
-        isReversed = true;
-      }
-
-      stepAnimation += stepAnimationShift;
-
-      if (isReversed) {
-        _canvas.CTX.translate(x + TILE_SIZE, y);
-
-        _canvas.CTX.scale(-1, 1);
-
-        x = 0;
-        y = 0;
-      }
-
-      _canvas.CTX.drawImage(_canvas.ISAAC_SPRITE, stepAnimation * SPRITE_SIZE, 0, TILE_SIZE, TILE_SIZE, x, y, TILE_SIZE + incrementConst, TILE_SIZE + incrementConst);
-
-      _canvas.CTX.restore();
-    }
-  }, {
-    key: "incrementStepAnimation",
-    value: function incrementStepAnimation(timestamp) {
-      this.stepAnimation++;
-      this.stepAnimation = this.stepAnimation % FRAMES_STEP;
-      this.stepAnimationTimeStamp = timestamp;
-    }
-  }, {
-    key: "getProgressOfAnimation",
-    value: function getProgressOfAnimation() {
-      var currentTimeStamp = new Date().getTime();
-      return (currentTimeStamp - this.animTimestamp) / ANIMATION_DURATION;
+      this.pacmanAnimation.draw(timestamp);
     }
   }]);
 
@@ -1228,7 +1281,7 @@ var Pacman = /*#__PURE__*/function () {
 }();
 
 exports.default = Pacman;
-},{"./canvas":"script/canvas.js","./pacmanBehaviour":"script/pacmanBehaviour.js","./state":"script/state.js","./data.json":"script/data.json"}],"script/game.js":[function(require,module,exports) {
+},{"./canvas":"script/canvas.js","./pacmanBehaviour":"script/pacmanBehaviour.js","./pacmanAnimation":"script/pacmanAnimation.js","./state":"script/state.js","./data.json":"script/data.json"}],"script/game.js":[function(require,module,exports) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
