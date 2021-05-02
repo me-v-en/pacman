@@ -1,4 +1,5 @@
 export const CANVAS_ELEMENT = document.getElementById("canvas");
+export const SCORE_ELEMENT = document.getElementById("score");
 export const CTX = canvas.getContext("2d");
 CTX.imageSmoothingEnabled = false;
 

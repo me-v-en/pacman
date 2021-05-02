@@ -6,6 +6,7 @@ import {
 import Boney from "./ghost";
 import Pacman from "./pacman";
 import Tile from "./tile";
+import STATE from "./state";
 
 const gameData = require("./data.json");
 const ENNEMIES_DATA = gameData.ennemiesData;
@@ -20,22 +21,21 @@ import {
 
 export default class Game {
   constructor() {
-    this.scoreElement = document.getElementById("score");
 
-    this.score = 0;
+    STATE.score = 0;
     // Possible state : STOPPED, START, GAME, CHASE
-    this.gameState = "START";
+    STATE.gameState = "START";
 
     this.initGame();
   }
 
   initGame() {
-    this.board = new Board();
-    this.pacman = new Pacman();
-    this.boneys = this.initEnnemies();
+    STATE.board = new Board();
+    STATE.pacman = new Pacman();
+    STATE.boneys = this.initEnnemies();
 
     // START, END
-    this.state = 'START';
+    STATE.gameState = 'START';
 
     this.draw();
   }
@@ -58,24 +58,24 @@ export default class Game {
   update(progress, timestamp) {
     // Update the state of the world for the elapsed time since last render
     this.updateGameState();
-    if (this.gameState !== 'END') {
-      this.updatePacman();
+    if (STATE.gameState !== 'END') {
+      STATE.pacman.update();
       this.updateEnnemies(timestamp);
     }
   }
   
   updateGameState() {
     if (this.isPacmanDead()) {
-      this.gameState = 'END';
+      STATE.gameState = 'END';
     }
   }
 
 
   isPacmanDead() {
     let pacmanIsDead = false;
-    ennemyLoop : for (let i = 0; i < this.boneys.length; i++){
-      let boney = this.boneys[i];
-      if (boney.isEnnemyKilled(this.pacman.currentCoord)) {
+    ennemyLoop : for (let i = 0; i < STATE.boneys.length; i++){
+      let boney = STATE.boneys[i];
+      if (boney.isEnnemyKilled(STATE.pacman.currentCoord)) {
         pacmanIsDead = true;
         break ennemyLoop;
       }
@@ -88,65 +88,11 @@ export default class Game {
     CTX.fillStyle = "#2c2a2a";
     CTX.fillRect(0, 0, CANVAS_ELEMENT.width, CANVAS_ELEMENT.height);
     // Update the state of the world for the elapsed time since last render
-    this.board.drawBoard();
-    this.pacman.draw(timestamp);
+    STATE.board.drawBoard();
+    STATE.pacman.draw(timestamp);
     this.drawEnnemies(timestamp);
   }
 
-  ////////////////////////////////////
-  // PACMAN
-  ////////////////////////////////////
-
-  updatePacman() {
-    // If animation still happening, leave
-    if (!this.pacman.isAnimationFinished()) {
-      return;
-    }
-
-    // ADD SCORE
-    this.addPointOfCurrentPacmanTile();
-    // If animation is still happening
-
-    let nextTile = this.computePathPacman();
-    if (nextTile) {
-      this.pacman.setMovingCoord(nextTile.coord);
-    } else {
-      // If no valid target tile, stop pacman
-      this.pacman.direction = "";
-      this.pacman.state = "IDLE";
-    }
-  }
-
-  computePathPacman() {
-    // If no direction given, leave
-    if (!this.pacman.direction && !this.pacman.isUserInputValid()) {
-      return;
-    }
-
-    // Get the next tile in the user given direction
-    let nextTileUserDirection = this.getNextTileInDirection(
-      this.pacman.currentCoord,
-      this.pacman.userInputDirection
-    );
-
-    // If the user direction is valid
-    if (nextTileUserDirection ?.tileType === "PATH") {
-      this.pacman.confirmUserDirection();
-      return nextTileUserDirection;
-    }
-
-    // Get the next tile in the initial direction
-    let nextTileCurrentDirection = this.getNextTileInDirection(
-      this.pacman.currentCoord,
-      this.pacman.direction
-    );
-
-    // If the initial direction is valid
-    if (nextTileCurrentDirection ?.tileType === "PATH") {
-      this.pacman.setMovingCoord(nextTileCurrentDirection.coord);
-      return nextTileCurrentDirection;
-    }
-  }
 
   ////////////////////////////////////
   // GHOSTS
@@ -160,7 +106,7 @@ export default class Game {
   }
 
   updateEnnemies(timestamp) {
-    this.boneys.forEach((boney) => {
+    STATE.boneys.forEach((boney) => {
       this.updateEnnemy(boney, timestamp);
     });
   }
@@ -215,13 +161,13 @@ export default class Game {
   getTarget(ennemy) {
     if (!ennemy.state === 'CHASE') return;
     ennemy.justSpawned = false;
-    ennemy.targetCoord = this.pacman.movingCoord;
+    ennemy.targetCoord = STATE.pacman.movingCoord;
   }
 
 
 
   drawEnnemies(timestamp) {
-    this.boneys.forEach((boney) => {
+    STATE.boneys.forEach((boney) => {
       boney.draw(timestamp);
     });
   }
@@ -234,22 +180,10 @@ export default class Game {
 
     let directionMatrice = DIRECTION_MATRICES[direction];
     let coordToMove = addCoord(directionMatrice, currentCoord);
-    return this.board.getTile(coordToMove);
+    return STATE.board.getTile(coordToMove);
   }
 
-  addPointOfCurrentPacmanTile() {
-    let currentTile = this.board.getTile(this.pacman.currentCoord);
 
-    if (currentTile.hasPoint || currentTile.hasSuperPoint) {
-      this.addScore(10);
-      currentTile.removePoint();
-    }
-  }
-
-  addScore(value) {
-    this.score += value;
-    this.scoreElement.textContent = this.score;
-  }
 
   bindEventHandler() {
     document.addEventListener("keydown", this.keydownEventHandler.bind(this));
@@ -264,22 +198,22 @@ export default class Game {
 
     // LEFT : ARROW_LEFT or Q
     if (keycode === 37 || keycode === 81) {
-      this.pacman.setUserInputDirection("LEFT");
+      STATE.pacman.setUserInputDirection("LEFT");
       event.preventDefault();
     }
     // RIGHT : ARROW_RIGHT or D
     if (keycode === 39 || keycode === 68) {
-      this.pacman.setUserInputDirection("RIGHT");
+      STATE.pacman.setUserInputDirection("RIGHT");
     event.preventDefault();
     }
     // UP : ARROW_UP or Z
     if (keycode === 38 || keycode === 90) {
-      this.pacman.setUserInputDirection("UP");
+      STATE.pacman.setUserInputDirection("UP");
     event.preventDefault();
     }
     // DOWN : ARROW_DOWN or S
     if (keycode === 40 || keycode === 83) {
-      this.pacman.setUserInputDirection("DOWN");
+      STATE.pacman.setUserInputDirection("DOWN");
     event.preventDefault();
     }
   }

@@ -123,9 +123,11 @@ parcelRequire = (function (modules, cache, entry, globalName) {
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.BONEY_BODY = exports.BONEY_HEAD = exports.ISAAC_SPRITE = exports.PILL_IMAGE = exports.COIN_IMAGE = exports.BG_IMAGE = exports.CTX = exports.CANVAS_ELEMENT = void 0;
+exports.BONEY_BODY = exports.BONEY_HEAD = exports.ISAAC_SPRITE = exports.PILL_IMAGE = exports.COIN_IMAGE = exports.BG_IMAGE = exports.CTX = exports.SCORE_ELEMENT = exports.CANVAS_ELEMENT = void 0;
 var CANVAS_ELEMENT = document.getElementById("canvas");
 exports.CANVAS_ELEMENT = CANVAS_ELEMENT;
+var SCORE_ELEMENT = document.getElementById("score");
+exports.SCORE_ELEMENT = SCORE_ELEMENT;
 var CTX = canvas.getContext("2d");
 exports.CTX = CTX;
 CTX.imageSmoothingEnabled = false;
@@ -360,7 +362,47 @@ var Tile = /*#__PURE__*/function () {
 }();
 
 exports.default = Tile;
-},{"./canvas":"script/canvas.js","./utils":"script/utils.js","./data.json":"script/data.json"}],"script/board.js":[function(require,module,exports) {
+},{"./canvas":"script/canvas.js","./utils":"script/utils.js","./data.json":"script/data.json"}],"script/state.js":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = void 0;
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
+
+function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
+
+var State = /*#__PURE__*/function () {
+  function State() {
+    _classCallCheck(this, State);
+
+    this.initState();
+  }
+
+  _createClass(State, [{
+    key: "initState",
+    value: function initState() {
+      this.score = 0;
+      this.gameState = 'START';
+      this.board;
+      this.pacman;
+      this.boneys;
+    }
+  }]);
+
+  return State;
+}();
+
+var STATE = new State();
+var _default = {
+  STATE: STATE
+};
+exports.default = _default;
+},{}],"script/board.js":[function(require,module,exports) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -373,6 +415,8 @@ var _tile = _interopRequireDefault(require("./tile"));
 var _canvas = require("./canvas");
 
 var _utils = require("./utils");
+
+var _state = _interopRequireDefault(require("./state"));
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -439,13 +483,24 @@ var Board = /*#__PURE__*/function () {
         });
       });
     }
+  }, {
+    key: "getNextTileInDirection",
+    value: function getNextTileInDirection(currentCoord, direction) {
+      if (!direction || !currentCoord) {
+        return false;
+      }
+
+      var directionMatrice = _utils.DIRECTION_MATRICES[direction];
+      var coordToMove = (0, _utils.addCoord)(directionMatrice, currentCoord);
+      return _state.default.board.getTile(coordToMove);
+    }
   }]);
 
   return Board;
 }();
 
 exports.default = Board;
-},{"./tile":"script/tile.js","./canvas":"script/canvas.js","./utils":"script/utils.js","./data.json":"script/data.json"}],"script/ghost.js":[function(require,module,exports) {
+},{"./tile":"script/tile.js","./canvas":"script/canvas.js","./utils":"script/utils.js","./state":"script/state.js","./data.json":"script/data.json"}],"script/ghost.js":[function(require,module,exports) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -778,7 +833,111 @@ var Boney = /*#__PURE__*/function () {
 }();
 
 exports.default = Boney;
-},{"./canvas":"script/canvas.js","./utils":"script/utils.js","./data.json":"script/data.json"}],"script/pacman.js":[function(require,module,exports) {
+},{"./canvas":"script/canvas.js","./utils":"script/utils.js","./data.json":"script/data.json"}],"script/pacmanBehaviour.js":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = void 0;
+
+var _state = _interopRequireDefault(require("./state"));
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
+
+function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
+
+var gameData = require("./data.json");
+
+var ANIMATION_DURATION = gameData.animationDuration;
+
+var PacmanBehaviour = /*#__PURE__*/function () {
+  function PacmanBehaviour(pacman) {
+    _classCallCheck(this, PacmanBehaviour);
+
+    this.init(pacman);
+  }
+
+  _createClass(PacmanBehaviour, [{
+    key: "init",
+    value: function init(pacman) {
+      this.pacman = pacman;
+    }
+  }, {
+    key: "update",
+    value: function update() {
+      // If animation still happening, leave
+      var nextTile = this.computePathPacman();
+
+      if (nextTile) {
+        this.setMovingCoord(nextTile.coord);
+      } else {
+        // If no valid target tile, stop pacman
+        this.pacman.direction = "";
+        this.pacman.state = "IDLE";
+      }
+    }
+  }, {
+    key: "computePathPacman",
+    value: function computePathPacman() {
+      // If no direction given, leave
+      if (!this.pacman.direction && !this.isUserInputValid()) {
+        return;
+      } // Get the next tile in the user given direction
+
+
+      var nextTileUserDirection = _state.default.board.getNextTileInDirection(this.pacman.currentCoord, this.pacman.userInputDirection); // If the user direction is valid
+
+
+      if ((nextTileUserDirection === null || nextTileUserDirection === void 0 ? void 0 : nextTileUserDirection.tileType) === "PATH") {
+        this.confirmUserDirection();
+        return nextTileUserDirection;
+      } // Get the next tile in the initial direction
+
+
+      var nextTileCurrentDirection = _state.default.board.getNextTileInDirection(this.pacman.currentCoord, this.pacman.direction); // If the initial direction is valid
+
+
+      if ((nextTileCurrentDirection === null || nextTileCurrentDirection === void 0 ? void 0 : nextTileCurrentDirection.tileType) === "PATH") {
+        this.setMovingCoord(nextTileCurrentDirection.coord);
+        return nextTileCurrentDirection;
+      }
+    }
+  }, {
+    key: "setMovingCoord",
+    value: function setMovingCoord(coord) {
+      var _this = this;
+
+      this.pacman.state = "MOVING";
+      this.pacman.movingCoord = coord;
+      this.pacman.animTimestamp = new Date().getTime();
+      window.setTimeout(function () {
+        _this.pacman.currentCoord = coord;
+      }, ANIMATION_DURATION);
+    }
+  }, {
+    key: "isUserInputValid",
+    value: function isUserInputValid() {
+      var timeSinceLastInput = new Date().getTime() - this.pacman.inputTimestamp;
+      if (timeSinceLastInput > 2000) return null;
+      return this.pacman.userInputDirection;
+    }
+  }, {
+    key: "confirmUserDirection",
+    value: function confirmUserDirection() {
+      this.pacman.direction = this.pacman.userInputDirection;
+    }
+  }]);
+
+  return PacmanBehaviour;
+}();
+
+exports.default = PacmanBehaviour;
+},{"./data.json":"script/data.json","./state":"script/state.js"}],"script/pacman.js":[function(require,module,exports) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -787,6 +946,12 @@ Object.defineProperty(exports, "__esModule", {
 exports.default = void 0;
 
 var _canvas = require("./canvas");
+
+var _pacmanBehaviour = _interopRequireDefault(require("./pacmanBehaviour"));
+
+var _state = _interopRequireDefault(require("./state"));
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 function _slicedToArray(arr, i) { return _arrayWithHoles(arr) || _iterableToArrayLimit(arr, i) || _unsupportedIterableToArray(arr, i) || _nonIterableRest(); }
 
@@ -819,6 +984,7 @@ var Pacman = /*#__PURE__*/function () {
     _classCallCheck(this, Pacman);
 
     this.init(coord);
+    this.pacmanBehaviour = new _pacmanBehaviour.default(this);
   }
 
   _createClass(Pacman, [{
@@ -840,39 +1006,42 @@ var Pacman = /*#__PURE__*/function () {
       this.inputTimestamp = null;
     }
   }, {
+    key: "update",
+    value: function update() {
+      if (!this.isAnimationFinished()) {
+        return;
+      } // ADD SCORE
+
+
+      this.addPoint();
+      this.pacmanBehaviour.update();
+    }
+  }, {
+    key: "addPoint",
+    value: function addPoint() {
+      var currentTile = _state.default.board.getTile(_state.default.pacman.currentCoord);
+
+      if (currentTile.hasPoint || currentTile.hasSuperPoint) {
+        this.addScore(10);
+        currentTile.removePoint();
+      }
+    }
+  }, {
+    key: "addScore",
+    value: function addScore(value) {
+      this.setScore(_state.default.score + value);
+    }
+  }, {
+    key: "setScore",
+    value: function setScore(score) {
+      _state.default.score = score;
+      _canvas.SCORE_ELEMENT.textContent = _state.default.score;
+    }
+  }, {
     key: "setUserInputDirection",
     value: function setUserInputDirection(direction) {
       this.userInputDirection = direction;
       this.inputTimestamp = new Date().getTime();
-    }
-  }, {
-    key: "isUserInputValid",
-    value: function isUserInputValid() {
-      var timeSinceLastInput = new Date().getTime() - this.inputTimestamp;
-      if (timeSinceLastInput > 2000) return null;
-      return this.userInputDirection;
-    }
-  }, {
-    key: "confirmUserDirection",
-    value: function confirmUserDirection() {
-      this.direction = this.userInputDirection; // this.changePacmanSprite();
-    }
-  }, {
-    key: "setDirection",
-    value: function setDirection(direction) {
-      this.direction = direction;
-    }
-  }, {
-    key: "setMovingCoord",
-    value: function setMovingCoord(coord) {
-      var _this = this;
-
-      this.state = "MOVING";
-      this.movingCoord = coord;
-      this.animTimestamp = new Date().getTime();
-      window.setTimeout(function () {
-        _this.currentCoord = coord;
-      }, ANIMATION_DURATION);
     }
   }, {
     key: "isAnimationFinished",
@@ -1059,7 +1228,7 @@ var Pacman = /*#__PURE__*/function () {
 }();
 
 exports.default = Pacman;
-},{"./canvas":"script/canvas.js","./data.json":"script/data.json"}],"script/game.js":[function(require,module,exports) {
+},{"./canvas":"script/canvas.js","./pacmanBehaviour":"script/pacmanBehaviour.js","./state":"script/state.js","./data.json":"script/data.json"}],"script/game.js":[function(require,module,exports) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -1076,6 +1245,8 @@ var _ghost = _interopRequireDefault(require("./ghost"));
 var _pacman = _interopRequireDefault(require("./pacman"));
 
 var _tile = _interopRequireDefault(require("./tile"));
+
+var _state = _interopRequireDefault(require("./state"));
 
 var _utils = require("./utils");
 
@@ -1096,21 +1267,20 @@ var Game = /*#__PURE__*/function () {
   function Game() {
     _classCallCheck(this, Game);
 
-    this.scoreElement = document.getElementById("score");
-    this.score = 0; // Possible state : STOPPED, START, GAME, CHASE
+    _state.default.score = 0; // Possible state : STOPPED, START, GAME, CHASE
 
-    this.gameState = "START";
+    _state.default.gameState = "START";
     this.initGame();
   }
 
   _createClass(Game, [{
     key: "initGame",
     value: function initGame() {
-      this.board = new _board.default();
-      this.pacman = new _pacman.default();
-      this.boneys = this.initEnnemies(); // START, END
+      _state.default.board = new _board.default();
+      _state.default.pacman = new _pacman.default();
+      _state.default.boneys = this.initEnnemies(); // START, END
 
-      this.state = 'START';
+      _state.default.gameState = 'START';
       this.draw();
     }
   }, {
@@ -1134,8 +1304,9 @@ var Game = /*#__PURE__*/function () {
       // Update the state of the world for the elapsed time since last render
       this.updateGameState();
 
-      if (this.gameState !== 'END') {
-        this.updatePacman();
+      if (_state.default.gameState !== 'END') {
+        _state.default.pacman.update();
+
         this.updateEnnemies(timestamp);
       }
     }
@@ -1143,7 +1314,7 @@ var Game = /*#__PURE__*/function () {
     key: "updateGameState",
     value: function updateGameState() {
       if (this.isPacmanDead()) {
-        this.gameState = 'END';
+        _state.default.gameState = 'END';
       }
     }
   }, {
@@ -1151,10 +1322,10 @@ var Game = /*#__PURE__*/function () {
     value: function isPacmanDead() {
       var pacmanIsDead = false;
 
-      ennemyLoop: for (var i = 0; i < this.boneys.length; i++) {
-        var boney = this.boneys[i];
+      ennemyLoop: for (var i = 0; i < _state.default.boneys.length; i++) {
+        var boney = _state.default.boneys[i];
 
-        if (boney.isEnnemyKilled(this.pacman.currentCoord)) {
+        if (boney.isEnnemyKilled(_state.default.pacman.currentCoord)) {
           pacmanIsDead = true;
           break ennemyLoop;
         }
@@ -1171,57 +1342,11 @@ var Game = /*#__PURE__*/function () {
       _canvas.CTX.fillRect(0, 0, _canvas.CANVAS_ELEMENT.width, _canvas.CANVAS_ELEMENT.height); // Update the state of the world for the elapsed time since last render
 
 
-      this.board.drawBoard();
-      this.pacman.draw(timestamp);
+      _state.default.board.drawBoard();
+
+      _state.default.pacman.draw(timestamp);
+
       this.drawEnnemies(timestamp);
-    } ////////////////////////////////////
-    // PACMAN
-    ////////////////////////////////////
-
-  }, {
-    key: "updatePacman",
-    value: function updatePacman() {
-      // If animation still happening, leave
-      if (!this.pacman.isAnimationFinished()) {
-        return;
-      } // ADD SCORE
-
-
-      this.addPointOfCurrentPacmanTile(); // If animation is still happening
-
-      var nextTile = this.computePathPacman();
-
-      if (nextTile) {
-        this.pacman.setMovingCoord(nextTile.coord);
-      } else {
-        // If no valid target tile, stop pacman
-        this.pacman.direction = "";
-        this.pacman.state = "IDLE";
-      }
-    }
-  }, {
-    key: "computePathPacman",
-    value: function computePathPacman() {
-      // If no direction given, leave
-      if (!this.pacman.direction && !this.pacman.isUserInputValid()) {
-        return;
-      } // Get the next tile in the user given direction
-
-
-      var nextTileUserDirection = this.getNextTileInDirection(this.pacman.currentCoord, this.pacman.userInputDirection); // If the user direction is valid
-
-      if ((nextTileUserDirection === null || nextTileUserDirection === void 0 ? void 0 : nextTileUserDirection.tileType) === "PATH") {
-        this.pacman.confirmUserDirection();
-        return nextTileUserDirection;
-      } // Get the next tile in the initial direction
-
-
-      var nextTileCurrentDirection = this.getNextTileInDirection(this.pacman.currentCoord, this.pacman.direction); // If the initial direction is valid
-
-      if ((nextTileCurrentDirection === null || nextTileCurrentDirection === void 0 ? void 0 : nextTileCurrentDirection.tileType) === "PATH") {
-        this.pacman.setMovingCoord(nextTileCurrentDirection.coord);
-        return nextTileCurrentDirection;
-      }
     } ////////////////////////////////////
     // GHOSTS
     ////////////////////////////////////
@@ -1240,7 +1365,7 @@ var Game = /*#__PURE__*/function () {
     value: function updateEnnemies(timestamp) {
       var _this = this;
 
-      this.boneys.forEach(function (boney) {
+      _state.default.boneys.forEach(function (boney) {
         _this.updateEnnemy(boney, timestamp);
       });
     }
@@ -1301,12 +1426,12 @@ var Game = /*#__PURE__*/function () {
     value: function getTarget(ennemy) {
       if (!ennemy.state === 'CHASE') return;
       ennemy.justSpawned = false;
-      ennemy.targetCoord = this.pacman.movingCoord;
+      ennemy.targetCoord = _state.default.pacman.movingCoord;
     }
   }, {
     key: "drawEnnemies",
     value: function drawEnnemies(timestamp) {
-      this.boneys.forEach(function (boney) {
+      _state.default.boneys.forEach(function (boney) {
         boney.draw(timestamp);
       });
     }
@@ -1319,23 +1444,7 @@ var Game = /*#__PURE__*/function () {
 
       var directionMatrice = _utils.DIRECTION_MATRICES[direction];
       var coordToMove = (0, _utils.addCoord)(directionMatrice, currentCoord);
-      return this.board.getTile(coordToMove);
-    }
-  }, {
-    key: "addPointOfCurrentPacmanTile",
-    value: function addPointOfCurrentPacmanTile() {
-      var currentTile = this.board.getTile(this.pacman.currentCoord);
-
-      if (currentTile.hasPoint || currentTile.hasSuperPoint) {
-        this.addScore(10);
-        currentTile.removePoint();
-      }
-    }
-  }, {
-    key: "addScore",
-    value: function addScore(value) {
-      this.score += value;
-      this.scoreElement.textContent = this.score;
+      return _state.default.board.getTile(coordToMove);
     }
   }, {
     key: "bindEventHandler",
@@ -1353,25 +1462,29 @@ var Game = /*#__PURE__*/function () {
       var keycode = event.which; // LEFT : ARROW_LEFT or Q
 
       if (keycode === 37 || keycode === 81) {
-        this.pacman.setUserInputDirection("LEFT");
+        _state.default.pacman.setUserInputDirection("LEFT");
+
         event.preventDefault();
       } // RIGHT : ARROW_RIGHT or D
 
 
       if (keycode === 39 || keycode === 68) {
-        this.pacman.setUserInputDirection("RIGHT");
+        _state.default.pacman.setUserInputDirection("RIGHT");
+
         event.preventDefault();
       } // UP : ARROW_UP or Z
 
 
       if (keycode === 38 || keycode === 90) {
-        this.pacman.setUserInputDirection("UP");
+        _state.default.pacman.setUserInputDirection("UP");
+
         event.preventDefault();
       } // DOWN : ARROW_DOWN or S
 
 
       if (keycode === 40 || keycode === 83) {
-        this.pacman.setUserInputDirection("DOWN");
+        _state.default.pacman.setUserInputDirection("DOWN");
+
         event.preventDefault();
       }
     }
@@ -1381,7 +1494,7 @@ var Game = /*#__PURE__*/function () {
 }();
 
 exports.default = Game;
-},{"./board":"script/board.js","./canvas":"script/canvas.js","./ghost":"script/ghost.js","./pacman":"script/pacman.js","./tile":"script/tile.js","./data.json":"script/data.json","./utils":"script/utils.js"}],"script/index.js":[function(require,module,exports) {
+},{"./board":"script/board.js","./canvas":"script/canvas.js","./ghost":"script/ghost.js","./pacman":"script/pacman.js","./tile":"script/tile.js","./state":"script/state.js","./data.json":"script/data.json","./utils":"script/utils.js"}],"script/index.js":[function(require,module,exports) {
 "use strict";
 
 var _game = _interopRequireDefault(require("./game"));
@@ -1431,7 +1544,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "44111" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "33023" + '/');
 
   ws.onmessage = function (event) {
     checkedAssets = {};

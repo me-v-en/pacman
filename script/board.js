@@ -1,6 +1,8 @@
 import Tile from "./tile";
 import { CANVAS_ELEMENT, CTX, BG_IMAGE } from "./canvas";
-import { modulo } from "./utils";
+import { modulo, addCoord,  DIRECTION_MATRICES } from "./utils";
+
+import STATE from "./state";
 
 let gameData = require("./data.json");
 const BOARD_ARRAY = gameData.boardArray;
@@ -46,5 +48,15 @@ export default class Board {
         tile.drawTile();
       });
     });
+  }
+
+  getNextTileInDirection(currentCoord, direction) {
+    if (!direction || !currentCoord) {
+      return false;
+    }
+
+    let directionMatrice = DIRECTION_MATRICES[direction];
+    let coordToMove = addCoord(directionMatrice, currentCoord);
+    return STATE.board.getTile(coordToMove);
   }
 }

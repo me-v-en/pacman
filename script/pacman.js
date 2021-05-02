@@ -1,4 +1,8 @@
-import { CTX, ISAAC_SPRITE } from "./canvas";
+import { CTX, ISAAC_SPRITE, SCORE_ELEMENT } from "./canvas";
+
+import pacmanBehaviour from "./pacmanBehaviour";
+
+import STATE from "./state";
 
 const gameData = require("./data.json");
 const TILE_SIZE = gameData.tileSize;
@@ -9,6 +13,7 @@ const FRAMES_STEP = gameData.framesStep;
 export default class Pacman {
   constructor(coord) {
     this.init(coord);
+    this.pacmanBehaviour = new pacmanBehaviour(this);
   }
 
   init(coord = [1, 14]) {
@@ -30,33 +35,39 @@ export default class Pacman {
     this.inputTimestamp = null;
   }
 
+
+  update() {
+    if (!this.isAnimationFinished()) {
+      return;
+    }
+
+        // ADD SCORE
+    this.addPoint();
+    
+    this.pacmanBehaviour.update();
+  }
+
+  addPoint() {
+    let currentTile = STATE.board.getTile(STATE.pacman.currentCoord);
+
+    if (currentTile.hasPoint || currentTile.hasSuperPoint) {
+      this.addScore(10);
+      currentTile.removePoint();
+    }
+  }    
+
+  addScore(value) {
+    this.setScore(STATE.score + value);
+  }
+
+  setScore(score) {
+    STATE.score = score;
+    SCORE_ELEMENT.textContent = STATE.score;
+  }
+
   setUserInputDirection(direction) {
     this.userInputDirection = direction;
     this.inputTimestamp = new Date().getTime();
-  }
-
-  isUserInputValid(){
-    let timeSinceLastInput = new Date().getTime() - this.inputTimestamp;
-    if(timeSinceLastInput > 2000) return null;
-    return this.userInputDirection;
-  }
-
-  confirmUserDirection() {
-    this.direction = this.userInputDirection;
-    // this.changePacmanSprite();
-  }
-
-  setDirection(direction) {
-    this.direction = direction;
-  }
-
-  setMovingCoord(coord) {
-    this.state = "MOVING";
-    this.movingCoord = coord;
-    this.animTimestamp = new Date().getTime();
-    window.setTimeout(() => {
-      this.currentCoord = coord;
-    }, ANIMATION_DURATION);
   }
 
   isAnimationFinished() {
