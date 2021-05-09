@@ -390,7 +390,7 @@ var State = /*#__PURE__*/function () {
       this.gameState = 'START';
       this.board;
       this.pacman;
-      this.boneys;
+      this.ennemies;
     }
   }]);
 
@@ -500,7 +500,188 @@ var Board = /*#__PURE__*/function () {
 }();
 
 exports.default = Board;
-},{"./tile":"script/tile.js","./canvas":"script/canvas.js","./utils":"script/utils.js","./state":"script/state.js","./data.json":"script/data.json"}],"script/ghost.js":[function(require,module,exports) {
+},{"./tile":"script/tile.js","./canvas":"script/canvas.js","./utils":"script/utils.js","./state":"script/state.js","./data.json":"script/data.json"}],"script/ennemyBehaviour.js":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = void 0;
+
+var _state = _interopRequireDefault(require("./state"));
+
+var _utils = require("./utils");
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
+
+function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
+
+var gameData = require("./data.json");
+
+var ANIMATION_DURATION = gameData.animationDuration;
+var DIRECTIONS = ['DOWN', 'UP', 'RIGHT', 'LEFT'];
+
+var EnnemyBehaviour = /*#__PURE__*/function () {
+  function EnnemyBehaviour(ennemy) {
+    _classCallCheck(this, EnnemyBehaviour);
+
+    this.init(ennemy);
+  }
+
+  _createClass(EnnemyBehaviour, [{
+    key: "init",
+    value: function init(ennemy) {
+      this.ennemy = ennemy;
+    }
+  }, {
+    key: "update",
+    value: function update(timestamp) {
+      this.updateState();
+      this.computePath();
+    }
+  }, {
+    key: "updateState",
+    value: function updateState() {
+      switch (this.ennemy.state) {
+        case 'SPAWN':
+          if ((0, _utils.compareArrays)(this.ennemy.currentCoord, this.ennemy.targetCoord)) {
+            this.ennemy.targetCoord = this.ennemy.scatterCoord;
+            this.ennemy.state = 'SCATTER';
+          }
+
+          ;
+          break;
+
+        case 'SCATTER':
+          if ((0, _utils.compareArrays)(this.ennemy.currentCoord, this.ennemy.scatterCoord)) {
+            this.ennemy.state = 'CHASE';
+          }
+
+          ;
+          break;
+
+        case 'CHASE':
+          break;
+      }
+    }
+  }, {
+    key: "computePath",
+    value: function computePath() {
+      // get all possible tiles for the ennemy
+      var possibleTiles = this.getPossibleTiles();
+
+      if (possibleTiles.length > 1 && this.ennemy.state === 'CHASE') {
+        this.getTarget();
+      } // Compute what is the closest possible tile to the target coord
+
+
+      var tileToMove = this.computeNearestTileToTarget(possibleTiles);
+      if (!tileToMove) return; // Set the target coord
+
+      this.setMovingCoord(tileToMove.coord);
+    }
+  }, {
+    key: "getPossibleTiles",
+    value: function getPossibleTiles() {
+      var _this = this;
+
+      var currentCoord = this.ennemy.currentCoord; // Ennemies can't go backwards
+
+      var possibleDirections = DIRECTIONS.filter(function (dir) {
+        return dir != _this.getOppositeDirection();
+      });
+      var adjacentTiles = possibleDirections.map(function (direction) {
+        return _state.default.board.getNextTileInDirection(currentCoord, direction);
+      });
+      return adjacentTiles.filter(function (tile) {
+        return _this.isTilePossible(tile);
+      });
+    }
+  }, {
+    key: "isTilePossible",
+    value: function isTilePossible(tile) {
+      if (this.ennemy.justSpawned) {
+        return ['PATH', 'GATE', 'HOME'].includes(tile.tileType);
+      }
+
+      return (tile === null || tile === void 0 ? void 0 : tile.tileType) === "PATH";
+    }
+  }, {
+    key: "computeNearestTileToTarget",
+    value: function computeNearestTileToTarget(possibleTiles) {
+      var targetCoord = this.ennemy.targetCoord;
+      var closestDistance = null;
+      var closestTile = null;
+      possibleTiles.forEach(function (tile) {
+        var distance = (0, _utils.distanceBetweenCoords)(tile.coord, targetCoord);
+
+        if (closestDistance === null || distance < closestDistance) {
+          closestDistance = distance;
+          closestTile = tile;
+        }
+      });
+      return closestTile;
+    }
+  }, {
+    key: "getTarget",
+    value: function getTarget() {
+      if (!this.ennemy.state === 'CHASE') return;
+      this.ennemy.justSpawned = false;
+      this.ennemy.targetCoord = _state.default.pacman.movingCoord;
+    }
+  }, {
+    key: "computeDirection",
+    value: function computeDirection() {
+      var directionCoord = (0, _utils.substractCoord)(this.ennemy.movingCoord, this.ennemy.currentCoord);
+      return (0, _utils.getDirectionFromCoord)(directionCoord);
+    }
+  }, {
+    key: "getOppositeDirection",
+    value: function getOppositeDirection() {
+      switch (this.ennemy.direction) {
+        case 'UP':
+          return 'DOWN';
+          break;
+
+        case 'DOWN':
+          return 'UP';
+          break;
+
+        case 'LEFT':
+          return 'RIGHT';
+          break;
+
+        case 'RIGHT':
+          return 'LEFT';
+          break;
+
+        default:
+          return null;
+      }
+    }
+  }, {
+    key: "setMovingCoord",
+    value: function setMovingCoord(coord) {
+      var _this2 = this;
+
+      this.ennemy.movingCoord = coord;
+      this.ennemy.animTimestamp = new Date().getTime();
+      this.ennemy.direction = this.computeDirection();
+      window.setTimeout(function () {
+        _this2.ennemy.currentCoord = coord;
+      }, ANIMATION_DURATION);
+    }
+  }]);
+
+  return EnnemyBehaviour;
+}();
+
+exports.default = EnnemyBehaviour;
+},{"./data.json":"script/data.json","./state":"script/state.js","./utils":"script/utils.js"}],"script/ennemy.js":[function(require,module,exports) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -511,6 +692,10 @@ exports.default = void 0;
 var _canvas = require("./canvas");
 
 var _utils = require("./utils");
+
+var _ennemyBehaviour = _interopRequireDefault(require("./ennemyBehaviour"));
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 function _slicedToArray(arr, i) { return _arrayWithHoles(arr) || _iterableToArrayLimit(arr, i) || _unsupportedIterableToArray(arr, i) || _nonIterableRest(); }
 
@@ -539,14 +724,15 @@ var STEP_DURATION = gameData.stepAnimationDuration;
 var FRAMES_STEP = gameData.framesStep;
 var DIRECTIONS = ['DOWN', 'RIGHT', 'UP', 'LEFT']; //STATE : SPAWN, SCATTER, CHASE
 
-var Boney = /*#__PURE__*/function () {
-  function Boney(coord) {
-    _classCallCheck(this, Boney);
+var Ennemy = /*#__PURE__*/function () {
+  function Ennemy(coord) {
+    _classCallCheck(this, Ennemy);
 
     this.init(coord);
+    this.EnnemyBehaviour = new _ennemyBehaviour.default(this);
   }
 
-  _createClass(Boney, [{
+  _createClass(Ennemy, [{
     key: "init",
     value: function init(ennemyData) {
       this.ennemyData = ennemyData; // Actual coord
@@ -584,71 +770,11 @@ var Boney = /*#__PURE__*/function () {
       this.direction = direction;
     }
   }, {
-    key: "getOppositeDirection",
-    value: function getOppositeDirection() {
-      switch (this.direction) {
-        case 'UP':
-          return 'DOWN';
-          break;
-
-        case 'DOWN':
-          return 'UP';
-          break;
-
-        case 'LEFT':
-          return 'RIGHT';
-          break;
-
-        case 'RIGHT':
-          return 'LEFT';
-          break;
-
-        default:
-          return null;
-      }
-    }
-  }, {
-    key: "setMovingCoord",
-    value: function setMovingCoord(coord) {
-      var _this = this;
-
-      this.movingCoord = coord;
-      this.animTimestamp = new Date().getTime();
-      this.direction = this.computeDirection();
-      window.setTimeout(function () {
-        _this.currentCoord = coord;
-      }, ANIMATION_DURATION);
-    }
-  }, {
-    key: "updateState",
-    value: function updateState() {
-      switch (this.state) {
-        case 'SPAWN':
-          if ((0, _utils.compareArrays)(this.currentCoord, this.targetCoord)) {
-            this.targetCoord = this.scatterCoord;
-            this.state = 'SCATTER';
-          }
-
-          ;
-          break;
-
-        case 'SCATTER':
-          if ((0, _utils.compareArrays)(this.currentCoord, this.scatterCoord)) {
-            this.state = 'CHASE';
-          }
-
-          ;
-          break;
-
-        case 'CHASE':
-          break;
-      }
-    }
-  }, {
-    key: "computeDirection",
-    value: function computeDirection() {
-      var directionCoord = (0, _utils.substractCoord)(this.movingCoord, this.currentCoord);
-      return (0, _utils.getDirectionFromCoord)(directionCoord);
+    key: "update",
+    value: function update(timestamp) {
+      if (!this.isAnimationFinished()) return;
+      if (!this.canMove(timestamp)) return;
+      this.EnnemyBehaviour.update(timestamp);
     }
   }, {
     key: "isAnimationFinished",
@@ -782,7 +908,7 @@ var Boney = /*#__PURE__*/function () {
   }, {
     key: "drawHead",
     value: function drawHead(x, y) {
-      var _this2 = this;
+      var _this = this;
 
       var incrementConst = 6;
 
@@ -791,7 +917,7 @@ var Boney = /*#__PURE__*/function () {
       x = x * TILE_SIZE - incrementConst / 2;
       y = (y - 0.6) * TILE_SIZE - incrementConst / 2;
       var spriteIndex = DIRECTIONS.findIndex(function (direction) {
-        return direction === _this2.direction;
+        return direction === _this.direction;
       });
       if (spriteIndex === -1) spriteIndex = 0;
       var isReversed = false;
@@ -829,11 +955,11 @@ var Boney = /*#__PURE__*/function () {
     }
   }]);
 
-  return Boney;
+  return Ennemy;
 }();
 
-exports.default = Boney;
-},{"./canvas":"script/canvas.js","./utils":"script/utils.js","./data.json":"script/data.json"}],"script/pacmanBehaviour.js":[function(require,module,exports) {
+exports.default = Ennemy;
+},{"./canvas":"script/canvas.js","./utils":"script/utils.js","./ennemyBehaviour":"script/ennemyBehaviour.js","./data.json":"script/data.json"}],"script/pacmanBehaviour.js":[function(require,module,exports) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -1293,7 +1419,7 @@ var _board = _interopRequireDefault(require("./board"));
 
 var _canvas = require("./canvas");
 
-var _ghost = _interopRequireDefault(require("./ghost"));
+var _ennemy = _interopRequireDefault(require("./ennemy"));
 
 var _pacman = _interopRequireDefault(require("./pacman"));
 
@@ -1331,7 +1457,7 @@ var Game = /*#__PURE__*/function () {
     value: function initGame() {
       _state.default.board = new _board.default();
       _state.default.pacman = new _pacman.default();
-      _state.default.boneys = this.initEnnemies(); // START, END
+      _state.default.ennemies = this.initEnnemies(); // START, END
 
       _state.default.gameState = 'START';
       this.draw();
@@ -1375,10 +1501,10 @@ var Game = /*#__PURE__*/function () {
     value: function isPacmanDead() {
       var pacmanIsDead = false;
 
-      ennemyLoop: for (var i = 0; i < _state.default.boneys.length; i++) {
-        var boney = _state.default.boneys[i];
+      ennemyLoop: for (var i = 0; i < _state.default.ennemies.length; i++) {
+        var ennemy = _state.default.ennemies[i];
 
-        if (boney.isEnnemyKilled(_state.default.pacman.currentCoord)) {
+        if (ennemy.isEnnemyKilled(_state.default.pacman.currentCoord)) {
           pacmanIsDead = true;
           break ennemyLoop;
         }
@@ -1407,97 +1533,25 @@ var Game = /*#__PURE__*/function () {
   }, {
     key: "initEnnemies",
     value: function initEnnemies() {
-      var boneys = [];
+      var ennemies = [];
       ENNEMIES_DATA.forEach(function (ennemyData) {
-        boneys.push(new _ghost.default(ennemyData));
+        ennemies.push(new _ennemy.default(ennemyData));
       });
-      return boneys;
+      return ennemies;
     }
   }, {
     key: "updateEnnemies",
     value: function updateEnnemies(timestamp) {
-      var _this = this;
-
-      _state.default.boneys.forEach(function (boney) {
-        _this.updateEnnemy(boney, timestamp);
+      _state.default.ennemies.forEach(function (ennemy) {
+        ennemy.update(timestamp);
       });
-    }
-  }, {
-    key: "updateEnnemy",
-    value: function updateEnnemy(ennemy, timestamp) {
-      if (!ennemy.isAnimationFinished()) return;
-      if (!ennemy.canMove(timestamp)) return;
-      ennemy.updateState(); // get all possible tiles for the ennemy
-
-      var possibleTiles = this.getEnnemyPossibleTiles(ennemy);
-
-      if (possibleTiles.length > 1 && ennemy.state === 'CHASE') {
-        this.getTarget(ennemy);
-      } // Compute what is the closest possible tile to the target coord
-
-
-      var tileToMove = this.computeNearestTileToTarget(ennemy, possibleTiles);
-      if (!tileToMove) return; // Set the target coord
-
-      ennemy.setMovingCoord(tileToMove.coord);
-    }
-  }, {
-    key: "getEnnemyPossibleTiles",
-    value: function getEnnemyPossibleTiles(ennemy) {
-      var _this2 = this;
-
-      var currentCoord = ennemy.currentCoord; // Ennemies can't go backwards
-
-      var possibleDirections = DIRECTIONS.filter(function (dir) {
-        return dir != ennemy.getOppositeDirection();
-      });
-      var adjacentTiles = possibleDirections.map(function (direction) {
-        return _this2.getNextTileInDirection(currentCoord, direction);
-      });
-      return adjacentTiles.filter(function (tile) {
-        return ennemy.isTilePossible(tile);
-      });
-    }
-  }, {
-    key: "computeNearestTileToTarget",
-    value: function computeNearestTileToTarget(ennemy, possibleTiles) {
-      var targetCoord = ennemy.targetCoord;
-      var closestDistance = null;
-      var closestTile = null;
-      possibleTiles.forEach(function (tile) {
-        var distance = (0, _utils.distanceBetweenCoords)(tile.coord, ennemy.targetCoord);
-
-        if (closestDistance === null || distance < closestDistance) {
-          closestDistance = distance;
-          closestTile = tile;
-        }
-      });
-      return closestTile;
-    }
-  }, {
-    key: "getTarget",
-    value: function getTarget(ennemy) {
-      if (!ennemy.state === 'CHASE') return;
-      ennemy.justSpawned = false;
-      ennemy.targetCoord = _state.default.pacman.movingCoord;
     }
   }, {
     key: "drawEnnemies",
     value: function drawEnnemies(timestamp) {
-      _state.default.boneys.forEach(function (boney) {
-        boney.draw(timestamp);
+      _state.default.ennemies.forEach(function (ennemy) {
+        ennemy.draw(timestamp);
       });
-    }
-  }, {
-    key: "getNextTileInDirection",
-    value: function getNextTileInDirection(currentCoord, direction) {
-      if (!direction || !currentCoord) {
-        return false;
-      }
-
-      var directionMatrice = _utils.DIRECTION_MATRICES[direction];
-      var coordToMove = (0, _utils.addCoord)(directionMatrice, currentCoord);
-      return _state.default.board.getTile(coordToMove);
     }
   }, {
     key: "bindEventHandler",
@@ -1547,7 +1601,7 @@ var Game = /*#__PURE__*/function () {
 }();
 
 exports.default = Game;
-},{"./board":"script/board.js","./canvas":"script/canvas.js","./ghost":"script/ghost.js","./pacman":"script/pacman.js","./tile":"script/tile.js","./state":"script/state.js","./data.json":"script/data.json","./utils":"script/utils.js"}],"script/index.js":[function(require,module,exports) {
+},{"./board":"script/board.js","./canvas":"script/canvas.js","./ennemy":"script/ennemy.js","./pacman":"script/pacman.js","./tile":"script/tile.js","./state":"script/state.js","./data.json":"script/data.json","./utils":"script/utils.js"}],"script/index.js":[function(require,module,exports) {
 "use strict";
 
 var _game = _interopRequireDefault(require("./game"));
@@ -1597,7 +1651,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "33023" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "41421" + '/');
 
   ws.onmessage = function (event) {
     checkedAssets = {};
