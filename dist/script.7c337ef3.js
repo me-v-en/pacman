@@ -681,7 +681,7 @@ var EnnemyBehaviour = /*#__PURE__*/function () {
 }();
 
 exports.default = EnnemyBehaviour;
-},{"./data.json":"script/data.json","./state":"script/state.js","./utils":"script/utils.js"}],"script/ennemy.js":[function(require,module,exports) {
+},{"./data.json":"script/data.json","./state":"script/state.js","./utils":"script/utils.js"}],"script/ennemyAnimation.js":[function(require,module,exports) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -691,9 +691,7 @@ exports.default = void 0;
 
 var _canvas = require("./canvas");
 
-var _utils = require("./utils");
-
-var _ennemyBehaviour = _interopRequireDefault(require("./ennemyBehaviour"));
+var _state = _interopRequireDefault(require("./state"));
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -722,83 +720,21 @@ var SPRITE_SIZE = gameData.spriteSize;
 var ANIMATION_DURATION = gameData.animationDuration;
 var STEP_DURATION = gameData.stepAnimationDuration;
 var FRAMES_STEP = gameData.framesStep;
-var DIRECTIONS = ['DOWN', 'RIGHT', 'UP', 'LEFT']; //STATE : SPAWN, SCATTER, CHASE
+var DIRECTIONS = ['DOWN', 'RIGHT', 'UP', 'LEFT'];
 
-var Ennemy = /*#__PURE__*/function () {
-  function Ennemy(coord) {
-    _classCallCheck(this, Ennemy);
+var EnnemyAnimation = /*#__PURE__*/function () {
+  function EnnemyAnimation(ennemy) {
+    _classCallCheck(this, EnnemyAnimation);
 
-    this.init(coord);
-    this.EnnemyBehaviour = new _ennemyBehaviour.default(this);
+    this.init(ennemy);
   }
 
-  _createClass(Ennemy, [{
+  _createClass(EnnemyAnimation, [{
     key: "init",
-    value: function init(ennemyData) {
-      this.ennemyData = ennemyData; // Actual coord
-
-      this.currentCoord = ennemyData.initialCoord; // Coord where the pacman is moving to
-
-      this.movingCoord = this.currentCoord; // Position of the gate to move to
-
-      this.targetCoord = ennemyData.initialTarget;
-      this.scatterCoord = ennemyData.scatterTarget;
-      this.spawnTimeout = ennemyData.spawnTimeout;
-      this.justSpawned = true; // Timestamp fo the start of the animation
-
-      this.direction = "";
-      this.userInputDirection = "";
-      this.beginningGameTimestamp = null;
-      this.animTimestamp = null;
+    value: function init(ennemy) {
+      this.ennemy = ennemy;
       this.stepAnimationTimeStamp = null;
       this.stepAnimation = 0;
-      this.state = 'SPAWN';
-    }
-  }, {
-    key: "canMove",
-    value: function canMove(timestamp) {
-      if (!this.beginningGameTimestamp) {
-        this.beginningGameTimestamp = timestamp;
-        return false;
-      }
-
-      return timestamp - this.beginningGameTimestamp > this.spawnTimeout;
-    }
-  }, {
-    key: "setDirection",
-    value: function setDirection(direction) {
-      this.direction = direction;
-    }
-  }, {
-    key: "update",
-    value: function update(timestamp) {
-      if (!this.isAnimationFinished()) return;
-      if (!this.canMove(timestamp)) return;
-      this.EnnemyBehaviour.update(timestamp);
-    }
-  }, {
-    key: "isAnimationFinished",
-    value: function isAnimationFinished() {
-      return this.currentCoord === this.movingCoord;
-    }
-  }, {
-    key: "isEnnemyKilled",
-    value: function isEnnemyKilled(targetCoord) {
-      return (0, _utils.compareArrays)(targetCoord, this.currentCoord);
-    }
-  }, {
-    key: "isTilePossible",
-    value: function isTilePossible(tile) {
-      if (this.justSpawned) {
-        return ['PATH', 'GATE', 'HOME'].includes(tile.tileType);
-      }
-
-      return (tile === null || tile === void 0 ? void 0 : tile.tileType) === "PATH";
-    }
-  }, {
-    key: "updateAnimation",
-    value: function updateAnimation() {
-      return null;
     }
   }, {
     key: "draw",
@@ -824,15 +760,20 @@ var Ennemy = /*#__PURE__*/function () {
   }, {
     key: "characterIsOutOfScreen",
     value: function characterIsOutOfScreen() {
-      if (this.movingCoord[0] === 27 && this.currentCoord[0] === 0) {
+      if (this.ennemy.movingCoord[0] === 27 && this.ennemy.currentCoord[0] === 0) {
         return true;
       }
 
-      if (this.movingCoord[0] === 0 && this.currentCoord[0] === 27) {
+      if (this.ennemy.movingCoord[0] === 0 && this.ennemy.currentCoord[0] === 27) {
         return true;
       }
 
       return false;
+    }
+  }, {
+    key: "isAnimationFinished",
+    value: function isAnimationFinished() {
+      return this.ennemy.currentCoord === this.ennemy.movingCoord;
     }
   }, {
     key: "getCoordToDraw",
@@ -840,19 +781,32 @@ var Ennemy = /*#__PURE__*/function () {
       var x, y;
 
       if (this.isAnimationFinished()) {
-        return this.currentCoord;
+        return this.ennemy.currentCoord;
       } // Get the percentage of progress of the anim
 
 
       var animationProgress = this.getProgressOfAnimation(); //Delta of the current tile and target tiles
 
-      var deltaX = this.movingCoord[0] - this.currentCoord[0];
-      var deltaY = this.movingCoord[1] - this.currentCoord[1]; // Position based on the progress of the animation
+      var deltaX = this.ennemy.movingCoord[0] - this.ennemy.currentCoord[0];
+      var deltaY = this.ennemy.movingCoord[1] - this.ennemy.currentCoord[1]; // Position based on the progress of the animation
 
-      x = this.currentCoord[0] + deltaX * animationProgress;
-      y = this.currentCoord[1] + deltaY * animationProgress; // Setting the position of the pacman
+      x = this.ennemy.currentCoord[0] + deltaX * animationProgress;
+      y = this.ennemy.currentCoord[1] + deltaY * animationProgress; // Setting the position of the pacman
 
       return [x, y];
+    }
+  }, {
+    key: "incrementStepAnimation",
+    value: function incrementStepAnimation(timestamp) {
+      this.stepAnimation++;
+      this.stepAnimation = this.stepAnimation % FRAMES_STEP;
+      this.stepAnimationTimeStamp = timestamp;
+    }
+  }, {
+    key: "getProgressOfAnimation",
+    value: function getProgressOfAnimation() {
+      var currentTimeStamp = new Date().getTime();
+      return (currentTimeStamp - this.ennemy.animTimestamp) / ANIMATION_DURATION;
     }
   }, {
     key: "drawOnCanvas",
@@ -879,11 +833,11 @@ var Ennemy = /*#__PURE__*/function () {
       var stepAnimation = this.stepAnimation;
       var isReversed = false;
 
-      if (this.direction === 'LEFT' || this.direction === 'RIGHT') {
+      if (this.ennemy.direction === 'LEFT' || this.ennemy.direction === 'RIGHT') {
         spriteIndex = 2;
       }
 
-      if (this.direction === 'LEFT') {
+      if (this.ennemy.direction === 'LEFT') {
         isReversed = true;
       }
 
@@ -917,12 +871,12 @@ var Ennemy = /*#__PURE__*/function () {
       x = x * TILE_SIZE - incrementConst / 2;
       y = (y - 0.6) * TILE_SIZE - incrementConst / 2;
       var spriteIndex = DIRECTIONS.findIndex(function (direction) {
-        return direction === _this.direction;
+        return direction === _this.ennemy.direction;
       });
       if (spriteIndex === -1) spriteIndex = 0;
       var isReversed = false;
 
-      if (this.direction === 'LEFT') {
+      if (this.ennemy.direction === 'LEFT') {
         isReversed = true;
         spriteIndex = 1;
       }
@@ -940,18 +894,107 @@ var Ennemy = /*#__PURE__*/function () {
 
       _canvas.CTX.restore();
     }
-  }, {
-    key: "incrementStepAnimation",
-    value: function incrementStepAnimation(timestamp) {
-      this.stepAnimation++;
-      this.stepAnimation = this.stepAnimation % FRAMES_STEP;
-      this.stepAnimationTimeStamp = timestamp;
+  }]);
+
+  return EnnemyAnimation;
+}();
+
+exports.default = EnnemyAnimation;
+},{"./data.json":"script/data.json","./canvas":"script/canvas.js","./state":"script/state.js"}],"script/ennemy.js":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = void 0;
+
+var _utils = require("./utils");
+
+var _ennemyBehaviour = _interopRequireDefault(require("./ennemyBehaviour"));
+
+var _ennemyAnimation = _interopRequireDefault(require("./ennemyAnimation"));
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
+
+function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
+
+var gameData = require("./data.json"); //STATE : SPAWN, SCATTER, CHASE
+
+
+var Ennemy = /*#__PURE__*/function () {
+  function Ennemy(coord) {
+    _classCallCheck(this, Ennemy);
+
+    this.init(coord);
+    this.ennemyBehaviour = new _ennemyBehaviour.default(this);
+    this.ennemyAnimation = new _ennemyAnimation.default(this);
+  }
+
+  _createClass(Ennemy, [{
+    key: "init",
+    value: function init(ennemyData) {
+      this.ennemyData = ennemyData; // Actual coord
+
+      this.currentCoord = ennemyData.initialCoord; // Coord where the pacman is moving to
+
+      this.movingCoord = this.currentCoord; // Position of the gate to move to
+
+      this.targetCoord = ennemyData.initialTarget;
+      this.scatterCoord = ennemyData.scatterTarget;
+      this.spawnTimeout = ennemyData.spawnTimeout;
+      this.justSpawned = true; // Timestamp fo the start of the animation
+
+      this.direction = "";
+      this.userInputDirection = "";
+      this.beginningGameTimestamp = null;
+      this.animTimestamp = null;
+      this.state = 'SPAWN';
     }
   }, {
-    key: "getProgressOfAnimation",
-    value: function getProgressOfAnimation() {
-      var currentTimeStamp = new Date().getTime();
-      return (currentTimeStamp - this.animTimestamp) / ANIMATION_DURATION;
+    key: "canMove",
+    value: function canMove(timestamp) {
+      if (!this.beginningGameTimestamp) {
+        this.beginningGameTimestamp = timestamp;
+        return false;
+      }
+
+      return timestamp - this.beginningGameTimestamp > this.spawnTimeout;
+    }
+  }, {
+    key: "setDirection",
+    value: function setDirection(direction) {
+      this.direction = direction;
+    }
+  }, {
+    key: "update",
+    value: function update(timestamp) {
+      if (!this.isAnimationFinished()) return;
+      if (!this.canMove(timestamp)) return;
+      this.ennemyBehaviour.update(timestamp);
+    }
+  }, {
+    key: "isPacmanKilled",
+    value: function isPacmanKilled(targetCoord) {
+      return (0, _utils.compareArrays)(targetCoord, this.currentCoord);
+    }
+  }, {
+    key: "isAnimationFinished",
+    value: function isAnimationFinished() {
+      return this.currentCoord === this.movingCoord;
+    }
+  }, {
+    key: "updateAnimation",
+    value: function updateAnimation() {
+      return null;
+    }
+  }, {
+    key: "draw",
+    value: function draw(timestamp) {
+      this.ennemyAnimation.draw(timestamp);
     }
   }]);
 
@@ -959,7 +1002,7 @@ var Ennemy = /*#__PURE__*/function () {
 }();
 
 exports.default = Ennemy;
-},{"./canvas":"script/canvas.js","./utils":"script/utils.js","./ennemyBehaviour":"script/ennemyBehaviour.js","./data.json":"script/data.json"}],"script/pacmanBehaviour.js":[function(require,module,exports) {
+},{"./utils":"script/utils.js","./ennemyBehaviour":"script/ennemyBehaviour.js","./ennemyAnimation":"script/ennemyAnimation.js","./data.json":"script/data.json"}],"script/pacmanBehaviour.js":[function(require,module,exports) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -1504,7 +1547,7 @@ var Game = /*#__PURE__*/function () {
       ennemyLoop: for (var i = 0; i < _state.default.ennemies.length; i++) {
         var ennemy = _state.default.ennemies[i];
 
-        if (ennemy.isEnnemyKilled(_state.default.pacman.currentCoord)) {
+        if (ennemy.isPacmanKilled(_state.default.pacman.currentCoord)) {
           pacmanIsDead = true;
           break ennemyLoop;
         }
@@ -1651,7 +1694,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "41421" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "43255" + '/');
 
   ws.onmessage = function (event) {
     checkedAssets = {};

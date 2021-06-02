@@ -1,30 +1,20 @@
 import {
-  CTX,
-  ENNEMY_HEAD,
-  ENNEMY_BODY
-} from "./canvas";
-
-import {
   getDirectionFromCoord,
   compareArrays,
   substractCoord
 } from "./utils";
 
 import EnnemyBehaviour from "./ennemyBehaviour";
+import EnnemyAnimation from "./ennemyAnimation";
 
 const gameData = require("./data.json");
-const TILE_SIZE = gameData.tileSize;
-const SPRITE_SIZE = gameData.spriteSize;
-const ANIMATION_DURATION = gameData.animationDuration;
-const STEP_DURATION = gameData.stepAnimationDuration;
-const FRAMES_STEP = gameData.framesStep;
-const DIRECTIONS = ['DOWN', 'RIGHT', 'UP', 'LEFT'];
 
 //STATE : SPAWN, SCATTER, CHASE
 export default class Ennemy {
   constructor(coord) {
     this.init(coord);
-    this.EnnemyBehaviour = new EnnemyBehaviour(this);
+    this.ennemyBehaviour = new EnnemyBehaviour(this);
+    this.ennemyAnimation = new EnnemyAnimation(this);
   }
 
   init(ennemyData) {
@@ -48,8 +38,6 @@ export default class Ennemy {
 
     this.beginningGameTimestamp = null;
     this.animTimestamp = null;
-    this.stepAnimationTimeStamp = null;
-    this.stepAnimation = 0;
 
     this.state = 'SPAWN';
   }
@@ -72,22 +60,15 @@ export default class Ennemy {
     if (!this.isAnimationFinished()) return;
     if (!this.canMove(timestamp)) return;
 
-    this.EnnemyBehaviour.update(timestamp);
+    this.ennemyBehaviour.update(timestamp);
+  }
+
+  isPacmanKilled(targetCoord) {
+    return compareArrays(targetCoord, this.currentCoord);
   }
 
   isAnimationFinished() {
     return this.currentCoord === this.movingCoord;
-  }
-
-  isEnnemyKilled(targetCoord) {
-    return compareArrays(targetCoord, this.currentCoord);
-  }
-
-  isTilePossible(tile) {
-    if (this.justSpawned) {
-      return ['PATH', 'GATE', 'HOME'].includes(tile.tileType);
-    }
-    return tile ?.tileType === "PATH";
   }
 
   updateAnimation() {
@@ -95,151 +76,6 @@ export default class Ennemy {
   }
 
   draw(timestamp) {
-    if (this.characterIsOutOfScreen()) {
-      return;
-    }
-    if(!this.stepAnimationTimeStamp){
-      this.stepAnimationTimeStamp = timestamp;
-    }
-    let x, y;
-    [x, y] = this.getCoordToDraw();
-    this.drawOnCanvas(x, y, timestamp);
-  }
-
-
-  characterIsOutOfScreen() {
-    if (this.movingCoord[0] === 27 && this.currentCoord[0] === 0) {
-      return true;
-    }
-    if (this.movingCoord[0] === 0 && this.currentCoord[0] === 27) {
-      return true;
-    }
-    return false;
-  }
-
-  getCoordToDraw() {
-    let x, y;
-    if (this.isAnimationFinished()) {
-      return this.currentCoord;
-    }
-    // Get the percentage of progress of the anim
-    let animationProgress = this.getProgressOfAnimation();
-
-    //Delta of the current tile and target tiles
-    let deltaX = this.movingCoord[0] - this.currentCoord[0];
-    let deltaY = this.movingCoord[1] - this.currentCoord[1];
-
-    // Position based on the progress of the animation
-    x = this.currentCoord[0] + deltaX * animationProgress;
-    y = this.currentCoord[1] + deltaY * animationProgress;
-
-    // Setting the position of the pacman
-    return [x, y];
-  }
-
-  drawOnCanvas(x, y, timestamp) {
-    let currentStepDuration = timestamp - this.stepAnimationTimeStamp;
-    if(currentStepDuration > STEP_DURATION){
-      this.incrementStepAnimation(timestamp);
-    }
-    this.drawBody(x, y);
-    this.drawHead(x, y);
-  }
-
-  drawBody(x, y){
-    const incrementConst = 6;
-
-    CTX.save();
-
-    x = x * TILE_SIZE - incrementConst / 2;
-    y = (y - 0.2) * TILE_SIZE - incrementConst / 2;
-
-    let spriteIndex = 0;
-    let stepAnimation = this.stepAnimation;
-    let isReversed = false;
-
-    if(this.direction === 'LEFT' || this.direction === 'RIGHT'){
-      spriteIndex = 2;
-    }
-
-    if (this.direction === 'LEFT') {
-      isReversed = true;
-    }
-
-    if(stepAnimation > 7){
-      spriteIndex++;
-      stepAnimation = stepAnimation % 8;
-    }
-
-    if (isReversed) {
-      CTX.translate( x + TILE_SIZE, y);
-      CTX.scale(-1, 1);
-      x = 0;
-      y= 0
-    }
-
-    CTX.drawImage(
-      ENNEMY_BODY,
-      stepAnimation * SPRITE_SIZE,
-      spriteIndex * SPRITE_SIZE,
-      TILE_SIZE,
-      TILE_SIZE,
-      x,
-      y,
-      TILE_SIZE + incrementConst,
-      TILE_SIZE + incrementConst,
-    );
-
-    CTX.restore();
-
-  }
-
-  drawHead(x, y) {
-    const incrementConst = 6;
-
-    CTX.save();
-
-    x = x * TILE_SIZE - incrementConst / 2;
-    y = (y - 0.6) * TILE_SIZE - incrementConst / 2;
-
-      let spriteIndex = DIRECTIONS.findIndex((direction) => direction === this.direction);
-    if (spriteIndex === -1) spriteIndex = 0;
-    let isReversed = false;
-    if (this.direction === 'LEFT') {
-      isReversed = true;
-      spriteIndex = 1;
-    }
-
-    if (isReversed) {
-      CTX.translate( x + TILE_SIZE, y);
-      CTX.scale(-1, 1);
-      x = 0;
-      y= 0
-    }
-
-    CTX.drawImage(
-      ENNEMY_HEAD,
-      spriteIndex * SPRITE_SIZE,
-      0,
-      TILE_SIZE,
-      TILE_SIZE,
-      x,
-      y,
-      TILE_SIZE + incrementConst,
-      TILE_SIZE + incrementConst,
-    );
-
-    CTX.restore();
-  }
-
-  incrementStepAnimation(timestamp){
-    this.stepAnimation++;
-    this.stepAnimation = this.stepAnimation % FRAMES_STEP;
-    this.stepAnimationTimeStamp = timestamp;
-  }
-
-  getProgressOfAnimation() {
-    let currentTimeStamp = new Date().getTime();
-    return (currentTimeStamp - this.animTimestamp) / ANIMATION_DURATION;
+    this.ennemyAnimation.draw(timestamp);
   }
 }

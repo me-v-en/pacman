@@ -75,7 +75,7 @@ export default class Game {
     let pacmanIsDead = false;
     ennemyLoop : for (let i = 0; i < STATE.ennemies.length; i++){
       let ennemy = STATE.ennemies[i];
-      if (ennemy.isEnnemyKilled(STATE.pacman.currentCoord)) {
+      if (ennemy.isPacmanKilled(STATE.pacman.currentCoord)) {
         pacmanIsDead = true;
         break ennemyLoop;
       }
