@@ -7,5 +7,5 @@ export const BG_IMAGE = document.getElementById("bgBoard");
 export const COIN_IMAGE = document.getElementById("coin");
 export const PILL_IMAGE = document.getElementById("pill");
 export const ISAAC_SPRITE = document.getElementById("isaacSprite");
-export const BONEY_HEAD = document.getElementById("boneyHead");
-export const BONEY_BODY = document.getElementById("boneyBody");
+export const ENNEMY_HEAD = document.getElementById("ennemyHead");
+export const ENNEMY_BODY = document.getElementById("ennemyBody");

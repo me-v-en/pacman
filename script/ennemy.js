@@ -1,7 +1,7 @@
 import {
   CTX,
-  BONEY_HEAD,
-  BONEY_BODY
+  ENNEMY_HEAD,
+  ENNEMY_BODY
 } from "./canvas";
 
 import {
@@ -19,7 +19,7 @@ const FRAMES_STEP = gameData.framesStep;
 const DIRECTIONS = ['DOWN', 'RIGHT', 'UP', 'LEFT'];
 
 //STATE : SPAWN, SCATTER, CHASE
-export default class Boney {
+export default class Ennemy {
   constructor(coord) {
     this.init(coord);
   }
@@ -220,7 +220,7 @@ export default class Boney {
     }
 
     CTX.drawImage(
-      BONEY_BODY,
+      ENNEMY_BODY,
       stepAnimation * SPRITE_SIZE,
       spriteIndex * SPRITE_SIZE,
       TILE_SIZE,
@@ -259,7 +259,7 @@ export default class Boney {
     }
 
     CTX.drawImage(
-      BONEY_HEAD,
+      ENNEMY_HEAD,
       spriteIndex * SPRITE_SIZE,
       0,
       TILE_SIZE,

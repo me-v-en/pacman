@@ -8,7 +8,7 @@ class State {
     this.gameState = 'START';
     this.board;
     this.pacman;
-    this.boneys;
+    this.ennemies;
   }
 }
 

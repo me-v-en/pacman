@@ -123,7 +123,7 @@ parcelRequire = (function (modules, cache, entry, globalName) {
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.BONEY_BODY = exports.BONEY_HEAD = exports.ISAAC_SPRITE = exports.PILL_IMAGE = exports.COIN_IMAGE = exports.BG_IMAGE = exports.CTX = exports.SCORE_ELEMENT = exports.CANVAS_ELEMENT = void 0;
+exports.ENNEMY_BODY = exports.ENNEMY_HEAD = exports.ISAAC_SPRITE = exports.PILL_IMAGE = exports.COIN_IMAGE = exports.BG_IMAGE = exports.CTX = exports.SCORE_ELEMENT = exports.CANVAS_ELEMENT = void 0;
 var CANVAS_ELEMENT = document.getElementById("canvas");
 exports.CANVAS_ELEMENT = CANVAS_ELEMENT;
 var SCORE_ELEMENT = document.getElementById("score");
@@ -139,10 +139,10 @@ var PILL_IMAGE = document.getElementById("pill");
 exports.PILL_IMAGE = PILL_IMAGE;
 var ISAAC_SPRITE = document.getElementById("isaacSprite");
 exports.ISAAC_SPRITE = ISAAC_SPRITE;
-var BONEY_HEAD = document.getElementById("boneyHead");
-exports.BONEY_HEAD = BONEY_HEAD;
-var BONEY_BODY = document.getElementById("boneyBody");
-exports.BONEY_BODY = BONEY_BODY;
+var ENNEMY_HEAD = document.getElementById("ennemyHead");
+exports.ENNEMY_HEAD = ENNEMY_HEAD;
+var ENNEMY_BODY = document.getElementById("ennemyBody");
+exports.ENNEMY_BODY = ENNEMY_BODY;
 },{}],"script/data.json":[function(require,module,exports) {
 module.exports = {
   "animationDuration": 200,
@@ -390,7 +390,7 @@ var State = /*#__PURE__*/function () {
       this.gameState = 'START';
       this.board;
       this.pacman;
-      this.boneys;
+      this.ennemies;
     }
   }]);
 
@@ -500,7 +500,7 @@ var Board = /*#__PURE__*/function () {
 }();
 
 exports.default = Board;
-},{"./tile":"script/tile.js","./canvas":"script/canvas.js","./utils":"script/utils.js","./state":"script/state.js","./data.json":"script/data.json"}],"script/ghost.js":[function(require,module,exports) {
+},{"./tile":"script/tile.js","./canvas":"script/canvas.js","./utils":"script/utils.js","./state":"script/state.js","./data.json":"script/data.json"}],"script/ennemy.js":[function(require,module,exports) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -539,14 +539,14 @@ var STEP_DURATION = gameData.stepAnimationDuration;
 var FRAMES_STEP = gameData.framesStep;
 var DIRECTIONS = ['DOWN', 'RIGHT', 'UP', 'LEFT']; //STATE : SPAWN, SCATTER, CHASE
 
-var Boney = /*#__PURE__*/function () {
-  function Boney(coord) {
-    _classCallCheck(this, Boney);
+var Ennemy = /*#__PURE__*/function () {
+  function Ennemy(coord) {
+    _classCallCheck(this, Ennemy);
 
     this.init(coord);
   }
 
-  _createClass(Boney, [{
+  _createClass(Ennemy, [{
     key: "init",
     value: function init(ennemyData) {
       this.ennemyData = ennemyData; // Actual coord
@@ -775,7 +775,7 @@ var Boney = /*#__PURE__*/function () {
         y = 0;
       }
 
-      _canvas.CTX.drawImage(_canvas.BONEY_BODY, stepAnimation * SPRITE_SIZE, spriteIndex * SPRITE_SIZE, TILE_SIZE, TILE_SIZE, x, y, TILE_SIZE + incrementConst, TILE_SIZE + incrementConst);
+      _canvas.CTX.drawImage(_canvas.ENNEMY_BODY, stepAnimation * SPRITE_SIZE, spriteIndex * SPRITE_SIZE, TILE_SIZE, TILE_SIZE, x, y, TILE_SIZE + incrementConst, TILE_SIZE + incrementConst);
 
       _canvas.CTX.restore();
     }
@@ -810,7 +810,7 @@ var Boney = /*#__PURE__*/function () {
         y = 0;
       }
 
-      _canvas.CTX.drawImage(_canvas.BONEY_HEAD, spriteIndex * SPRITE_SIZE, 0, TILE_SIZE, TILE_SIZE, x, y, TILE_SIZE + incrementConst, TILE_SIZE + incrementConst);
+      _canvas.CTX.drawImage(_canvas.ENNEMY_HEAD, spriteIndex * SPRITE_SIZE, 0, TILE_SIZE, TILE_SIZE, x, y, TILE_SIZE + incrementConst, TILE_SIZE + incrementConst);
 
       _canvas.CTX.restore();
     }
@@ -829,10 +829,10 @@ var Boney = /*#__PURE__*/function () {
     }
   }]);
 
-  return Boney;
+  return Ennemy;
 }();
 
-exports.default = Boney;
+exports.default = Ennemy;
 },{"./canvas":"script/canvas.js","./utils":"script/utils.js","./data.json":"script/data.json"}],"script/pacmanBehaviour.js":[function(require,module,exports) {
 "use strict";
 
@@ -1293,7 +1293,7 @@ var _board = _interopRequireDefault(require("./board"));
 
 var _canvas = require("./canvas");
 
-var _ghost = _interopRequireDefault(require("./ghost"));
+var _ennemy = _interopRequireDefault(require("./ennemy"));
 
 var _pacman = _interopRequireDefault(require("./pacman"));
 
@@ -1331,7 +1331,7 @@ var Game = /*#__PURE__*/function () {
     value: function initGame() {
       _state.default.board = new _board.default();
       _state.default.pacman = new _pacman.default();
-      _state.default.boneys = this.initEnnemies(); // START, END
+      _state.default.ennemies = this.initEnnemies(); // START, END
 
       _state.default.gameState = 'START';
       this.draw();
@@ -1375,10 +1375,10 @@ var Game = /*#__PURE__*/function () {
     value: function isPacmanDead() {
       var pacmanIsDead = false;
 
-      ennemyLoop: for (var i = 0; i < _state.default.boneys.length; i++) {
-        var boney = _state.default.boneys[i];
+      ennemyLoop: for (var i = 0; i < _state.default.ennemies.length; i++) {
+        var ennemy = _state.default.ennemies[i];
 
-        if (boney.isEnnemyKilled(_state.default.pacman.currentCoord)) {
+        if (ennemy.isEnnemyKilled(_state.default.pacman.currentCoord)) {
           pacmanIsDead = true;
           break ennemyLoop;
         }
@@ -1397,9 +1397,9 @@ var Game = /*#__PURE__*/function () {
 
       _state.default.board.drawBoard();
 
-      _state.default.pacman.draw(timestamp);
-
       this.drawEnnemies(timestamp);
+
+      _state.default.pacman.draw(timestamp);
     } ////////////////////////////////////
     // GHOSTS
     ////////////////////////////////////
@@ -1407,19 +1407,19 @@ var Game = /*#__PURE__*/function () {
   }, {
     key: "initEnnemies",
     value: function initEnnemies() {
-      var boneys = [];
+      var ennemies = [];
       ENNEMIES_DATA.forEach(function (ennemyData) {
-        boneys.push(new _ghost.default(ennemyData));
+        ennemies.push(new _ennemy.default(ennemyData));
       });
-      return boneys;
+      return ennemies;
     }
   }, {
     key: "updateEnnemies",
     value: function updateEnnemies(timestamp) {
       var _this = this;
 
-      _state.default.boneys.forEach(function (boney) {
-        _this.updateEnnemy(boney, timestamp);
+      _state.default.ennemies.forEach(function (ennemy) {
+        _this.updateEnnemy(ennemy, timestamp);
       });
     }
   }, {
@@ -1484,8 +1484,8 @@ var Game = /*#__PURE__*/function () {
   }, {
     key: "drawEnnemies",
     value: function drawEnnemies(timestamp) {
-      _state.default.boneys.forEach(function (boney) {
-        boney.draw(timestamp);
+      _state.default.ennemies.forEach(function (ennemy) {
+        ennemy.draw(timestamp);
       });
     }
   }, {
@@ -1547,7 +1547,7 @@ var Game = /*#__PURE__*/function () {
 }();
 
 exports.default = Game;
-},{"./board":"script/board.js","./canvas":"script/canvas.js","./ghost":"script/ghost.js","./pacman":"script/pacman.js","./tile":"script/tile.js","./state":"script/state.js","./data.json":"script/data.json","./utils":"script/utils.js"}],"script/index.js":[function(require,module,exports) {
+},{"./board":"script/board.js","./canvas":"script/canvas.js","./ennemy":"script/ennemy.js","./pacman":"script/pacman.js","./tile":"script/tile.js","./state":"script/state.js","./data.json":"script/data.json","./utils":"script/utils.js"}],"script/index.js":[function(require,module,exports) {
 "use strict";
 
 var _game = _interopRequireDefault(require("./game"));
@@ -1597,7 +1597,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "33023" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "45061" + '/');
 
   ws.onmessage = function (event) {
     checkedAssets = {};

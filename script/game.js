@@ -3,7 +3,7 @@ import {
   CANVAS_ELEMENT,
   CTX
 } from "./canvas";
-import Boney from "./ghost";
+import Boney from "./ennemy";
 import Pacman from "./pacman";
 import Tile from "./tile";
 import STATE from "./state";
@@ -32,7 +32,7 @@ export default class Game {
   initGame() {
     STATE.board = new Board();
     STATE.pacman = new Pacman();
-    STATE.boneys = this.initEnnemies();
+    STATE.ennemies = this.initEnnemies();
 
     // START, END
     STATE.gameState = 'START';
@@ -73,9 +73,9 @@ export default class Game {
 
   isPacmanDead() {
     let pacmanIsDead = false;
-    ennemyLoop : for (let i = 0; i < STATE.boneys.length; i++){
-      let boney = STATE.boneys[i];
-      if (boney.isEnnemyKilled(STATE.pacman.currentCoord)) {
+    ennemyLoop : for (let i = 0; i < STATE.ennemies.length; i++){
+      let ennemy = STATE.ennemies[i];
+      if (ennemy.isEnnemyKilled(STATE.pacman.currentCoord)) {
         pacmanIsDead = true;
         break ennemyLoop;
       }
@@ -89,8 +89,8 @@ export default class Game {
     CTX.fillRect(0, 0, CANVAS_ELEMENT.width, CANVAS_ELEMENT.height);
     // Update the state of the world for the elapsed time since last render
     STATE.board.drawBoard();
-    STATE.pacman.draw(timestamp);
     this.drawEnnemies(timestamp);
+    STATE.pacman.draw(timestamp);
   }
 
 
@@ -98,16 +98,16 @@ export default class Game {
   // GHOSTS
   ////////////////////////////////////
   initEnnemies() {
-    const boneys = [];
+    const ennemies = [];
     ENNEMIES_DATA.forEach((ennemyData) => {
-      boneys.push(new Boney(ennemyData));
+      ennemies.push(new Boney(ennemyData));
     });
-    return boneys;
+    return ennemies;
   }
 
   updateEnnemies(timestamp) {
-    STATE.boneys.forEach((boney) => {
-      this.updateEnnemy(boney, timestamp);
+    STATE.ennemies.forEach((ennemy) => {
+      this.updateEnnemy(ennemy, timestamp);
     });
   }
 
@@ -167,8 +167,8 @@ export default class Game {
 
 
   drawEnnemies(timestamp) {
-    STATE.boneys.forEach((boney) => {
-      boney.draw(timestamp);
+    STATE.ennemies.forEach((ennemy) => {
+      ennemy.draw(timestamp);
     });
   }
 
