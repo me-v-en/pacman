@@ -10,6 +10,8 @@ import {
   substractCoord
 } from "./utils";
 
+import EnnemyBehaviour from "./ennemyBehaviour";
+
 const gameData = require("./data.json");
 const TILE_SIZE = gameData.tileSize;
 const SPRITE_SIZE = gameData.spriteSize;
@@ -22,6 +24,7 @@ const DIRECTIONS = ['DOWN', 'RIGHT', 'UP', 'LEFT'];
 export default class Ennemy {
   constructor(coord) {
     this.init(coord);
+    this.EnnemyBehaviour = new EnnemyBehaviour(this);
   }
 
   init(ennemyData) {
@@ -64,56 +67,12 @@ export default class Ennemy {
     this.direction = direction;
   }
 
-  getOppositeDirection(){
-    switch (this.direction){
-      case 'UP':
-        return 'DOWN';
-        break;
-      case 'DOWN':
-        return 'UP';
-        break;
-      case 'LEFT':
-        return 'RIGHT';
-        break;
-      case 'RIGHT':
-        return 'LEFT';
-        break;
-      default:
-        return null;
-    }
 
-  }
+  update(timestamp) {
+    if (!this.isAnimationFinished()) return;
+    if (!this.canMove(timestamp)) return;
 
-  setMovingCoord(coord) {
-    this.movingCoord = coord;
-    this.animTimestamp = new Date().getTime();
-    this.direction = this.computeDirection();
-    window.setTimeout(() => {
-      this.currentCoord = coord;
-    }, ANIMATION_DURATION);
-  }
-
-  updateState() {
-    switch (this.state) {
-      case 'SPAWN':
-        if (compareArrays(this.currentCoord, this.targetCoord)) {
-          this.targetCoord = this.scatterCoord;
-          this.state = 'SCATTER'
-        };
-        break;
-      case 'SCATTER':
-        if (compareArrays(this.currentCoord, this.scatterCoord)) {
-          this.state = 'CHASE'
-        };
-        break;
-      case 'CHASE':
-        break;
-    }
-  }
-
-  computeDirection() {
-    const directionCoord = substractCoord(this.movingCoord, this.currentCoord);
-    return getDirectionFromCoord(directionCoord);
+    this.EnnemyBehaviour.update(timestamp);
   }
 
   isAnimationFinished() {

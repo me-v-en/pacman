@@ -3,7 +3,7 @@ import {
   CANVAS_ELEMENT,
   CTX
 } from "./canvas";
-import Boney from "./ennemy";
+import Ennemy from "./ennemy";
 import Pacman from "./pacman";
 import Tile from "./tile";
 import STATE from "./state";
@@ -100,89 +100,22 @@ export default class Game {
   initEnnemies() {
     const ennemies = [];
     ENNEMIES_DATA.forEach((ennemyData) => {
-      ennemies.push(new Boney(ennemyData));
+      ennemies.push(new Ennemy(ennemyData));
     });
     return ennemies;
   }
 
   updateEnnemies(timestamp) {
     STATE.ennemies.forEach((ennemy) => {
-      this.updateEnnemy(ennemy, timestamp);
+      ennemy.update(timestamp);
     });
   }
-
-  updateEnnemy(ennemy,timestamp) {
-    if (!ennemy.isAnimationFinished()) return;
-    if (!ennemy.canMove(timestamp)) return;
-
-    ennemy.updateState();
-
-    // get all possible tiles for the ennemy
-    const possibleTiles = this.getEnnemyPossibleTiles(ennemy);
-    if (possibleTiles.length > 1 && ennemy.state === 'CHASE') {
-      this.getTarget(ennemy);
-    }
-    // Compute what is the closest possible tile to the target coord
-    const tileToMove = this.computeNearestTileToTarget(ennemy, possibleTiles);
-    if (!tileToMove) return;
-
-    // Set the target coord
-    ennemy.setMovingCoord(tileToMove.coord);
-  }
-
-  getEnnemyPossibleTiles(ennemy) {
-    let currentCoord = ennemy.currentCoord;
-    // Ennemies can't go backwards
-    let possibleDirections = DIRECTIONS.filter((dir) => dir != ennemy.getOppositeDirection());
-    let adjacentTiles = possibleDirections.map((direction) => {
-      return this.getNextTileInDirection(currentCoord, direction);
-    });
-
-    return adjacentTiles.filter((tile) => {
-      return ennemy.isTilePossible(tile);
-    })
-  }
-
-  computeNearestTileToTarget(ennemy, possibleTiles) {
-    let targetCoord = ennemy.targetCoord;
-    let closestDistance = null;
-    let closestTile = null;
-
-    possibleTiles.forEach((tile) => {
-      let distance = distanceBetweenCoords(tile.coord, ennemy.targetCoord);
-      if (closestDistance === null || distance < closestDistance) {
-        closestDistance = distance;
-        closestTile = tile;
-      }
-    });
-    return closestTile;
-  }
-
-  getTarget(ennemy) {
-    if (!ennemy.state === 'CHASE') return;
-    ennemy.justSpawned = false;
-    ennemy.targetCoord = STATE.pacman.movingCoord;
-  }
-
-
 
   drawEnnemies(timestamp) {
     STATE.ennemies.forEach((ennemy) => {
       ennemy.draw(timestamp);
     });
   }
-
-
-  getNextTileInDirection(currentCoord, direction) {
-    if (!direction || !currentCoord) {
-      return false;
-    }
-
-    let directionMatrice = DIRECTION_MATRICES[direction];
-    let coordToMove = addCoord(directionMatrice, currentCoord);
-    return STATE.board.getTile(coordToMove);
-  }
-
 
 
   bindEventHandler() {
