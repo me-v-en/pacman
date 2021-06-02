@@ -1159,12 +1159,18 @@ var PacmanAnimation = /*#__PURE__*/function () {
       this.pacman = pacman;
       this.stepAnimationTimeStamp = null;
       this.stepAnimation = 0;
+      this.isFrameAfterDeath = false;
     }
   }, {
     key: "draw",
     value: function draw(timestamp) {
       if (this.characterIsOutOfScreen()) {
         return;
+      }
+
+      if (this.pacman.state === "DEAD" && !this.isFrameAfterDeath) {
+        this.isFrameAfterDeath = true;
+        this.resetAnimation(timestamp);
       }
 
       if (!this.stepAnimationTimeStamp) {
@@ -1180,6 +1186,12 @@ var PacmanAnimation = /*#__PURE__*/function () {
       x = _this$getCoordToDraw2[0];
       y = _this$getCoordToDraw2[1];
       this.drawOnCanvas(x, y, timestamp);
+    }
+  }, {
+    key: "resetAnimation",
+    value: function resetAnimation(timestamp) {
+      this.stepAnimation = 0;
+      this.stepAnimationTimeStamp = timestamp;
     }
   }, {
     key: "characterIsOutOfScreen",
@@ -1210,7 +1222,7 @@ var PacmanAnimation = /*#__PURE__*/function () {
         y = this.pacman.currentCoord[1] + deltaY * animationProgress; // Setting the position of the pacman
       }
 
-      if (this.pacman.state === "IDLE") {
+      if (this.pacman.state === "IDLE" || this.pacman.state === "DEAD") {
         // If idle, set the pacman at the position of the tile
         x = this.pacman.currentCoord[0];
         y = this.pacman.currentCoord[1];
@@ -1221,9 +1233,14 @@ var PacmanAnimation = /*#__PURE__*/function () {
   }, {
     key: "incrementStepAnimation",
     value: function incrementStepAnimation(timestamp) {
-      this.stepAnimation++;
-      this.stepAnimation = this.stepAnimation % FRAMES_STEP;
-      this.stepAnimationTimeStamp = timestamp;
+      if (this.pacman.state === "DEAD" && this.stepAnimation > 1) {
+        this.stepAnimation = 2;
+        this.stepAnimationTimeStamp = timestamp;
+      } else {
+        this.stepAnimation++;
+        this.stepAnimation = this.stepAnimation % FRAMES_STEP;
+        this.stepAnimationTimeStamp = timestamp;
+      }
     }
   }, {
     key: "getProgressOfAnimation",
@@ -1240,8 +1257,33 @@ var PacmanAnimation = /*#__PURE__*/function () {
         this.incrementStepAnimation(timestamp);
       }
 
-      this.drawBody(x, y);
-      this.drawHead(x, y);
+      if (this.pacman.state === "DEAD") {
+        this.drawDeath(x, y);
+      } else {
+        this.drawBody(x, y);
+        this.drawHead(x, y);
+      }
+    }
+  }, {
+    key: "drawDeath",
+    value: function drawDeath(x, y) {
+      console.log(this.stepAnimation);
+      var frameCoord = [{
+        x: 0,
+        y: 2
+      }, {
+        x: 2,
+        y: 3
+      }, {
+        x: 3,
+        y: 2
+      }];
+
+      _canvas.CTX.save();
+
+      _canvas.CTX.drawImage(_canvas.ISAAC_SPRITE, frameCoord[this.stepAnimation].x * SPRITE_SIZE * 2, frameCoord[this.stepAnimation].y * SPRITE_SIZE * 2, TILE_SIZE * 2, TILE_SIZE * 2, x * (TILE_SIZE - 1), y * (TILE_SIZE - 2), TILE_SIZE * 2, TILE_SIZE * 2);
+
+      _canvas.CTX.restore();
     }
   }, {
     key: "drawBody",
@@ -1435,9 +1477,9 @@ var Pacman = /*#__PURE__*/function () {
       return this.currentCoord === this.movingCoord;
     }
   }, {
-    key: "updateAnimation",
-    value: function updateAnimation() {
-      return null;
+    key: "setDead",
+    value: function setDead() {
+      this.state = "DEAD";
     }
   }, {
     key: "draw",
@@ -1536,6 +1578,8 @@ var Game = /*#__PURE__*/function () {
     key: "updateGameState",
     value: function updateGameState() {
       if (this.isPacmanDead()) {
+        _state.default.pacman.setDead();
+
         _state.default.gameState = 'END';
       }
     }

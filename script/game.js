@@ -66,6 +66,7 @@ export default class Game {
   
   updateGameState() {
     if (this.isPacmanDead()) {
+      STATE.pacman.setDead();
       STATE.gameState = 'END';
     }
   }

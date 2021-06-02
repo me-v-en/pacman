@@ -75,11 +75,12 @@ export default class Pacman {
     return this.currentCoord === this.movingCoord;
   }
 
-  updateAnimation() {
-    return null;
+  setDead() {
+    this.state = "DEAD";
   }
 
   draw(timestamp) {
     this.pacmanAnimation.draw(timestamp);
   }
+
 }

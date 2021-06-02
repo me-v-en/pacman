@@ -18,6 +18,7 @@ export default class PacmanAnimation {
     this.pacman = pacman;
     this.stepAnimationTimeStamp = null;
     this.stepAnimation = 0;
+    this.isFrameAfterDeath = false;
   }
 
 
@@ -26,12 +27,22 @@ export default class PacmanAnimation {
       return;
     }
 
+    if (this.pacman.state === "DEAD" && !this.isFrameAfterDeath) {
+      this.isFrameAfterDeath = true;
+      this.resetAnimation(timestamp);
+    }
+
     if(!this.stepAnimationTimeStamp){
       this.stepAnimationTimeStamp = timestamp;
     }
     let x, y;
     [x, y] = this.getCoordToDraw();
     this.drawOnCanvas(x, y, timestamp);
+  }
+
+  resetAnimation(timestamp) {
+    this.stepAnimation = 0;
+    this.stepAnimationTimeStamp = timestamp;
   }
 
   characterIsOutOfScreen() {
@@ -59,7 +70,7 @@ export default class PacmanAnimation {
 
       // Setting the position of the pacman
     }
-    if (this.pacman.state === "IDLE") {
+    if (this.pacman.state === "IDLE" || this.pacman.state === "DEAD") {
       // If idle, set the pacman at the position of the tile
       x = this.pacman.currentCoord[0];
       y = this.pacman.currentCoord[1];
@@ -68,9 +79,16 @@ export default class PacmanAnimation {
   }
 
   incrementStepAnimation(timestamp){
-    this.stepAnimation++;
-    this.stepAnimation = this.stepAnimation % FRAMES_STEP;
-    this.stepAnimationTimeStamp = timestamp;
+    if (this.pacman.state === "DEAD" && this.stepAnimation > 1) {
+      this.stepAnimation = 2;
+      this.stepAnimationTimeStamp = timestamp;
+    }
+    else {
+      this.stepAnimation++;
+
+      this.stepAnimation = this.stepAnimation % FRAMES_STEP;
+      this.stepAnimationTimeStamp = timestamp;
+    }
   }
 
   getProgressOfAnimation() {
@@ -84,9 +102,35 @@ export default class PacmanAnimation {
     if(currentStepDuration > STEP_DURATION){
       this.incrementStepAnimation(timestamp);
     }
+    if (this.pacman.state === "DEAD") {
+      this.drawDeath(x, y);
+    }
+    else {
+      this.drawBody(x, y);
+      this.drawHead(x, y);
+    }
+  }
 
-    this.drawBody(x, y);
-    this.drawHead(x, y);
+  drawDeath(x, y) {
+    console.log(this.stepAnimation);
+    const frameCoord = [{ x: 0, y: 2 }, { x: 2, y: 3 }, { x: 3, y: 2 }]
+
+    CTX.save();
+    
+    CTX.drawImage(
+      ISAAC_SPRITE,
+      frameCoord[this.stepAnimation].x * SPRITE_SIZE * 2,
+      frameCoord[this.stepAnimation].y * SPRITE_SIZE * 2,
+      TILE_SIZE * 2,
+      TILE_SIZE * 2,
+      x * (TILE_SIZE - 1),
+      y * (TILE_SIZE - 2),
+      TILE_SIZE * 2,
+      TILE_SIZE * 2,
+    );
+
+    CTX.restore();
+    
   }
 
 
