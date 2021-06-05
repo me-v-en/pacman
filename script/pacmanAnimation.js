@@ -79,8 +79,8 @@ export default class PacmanAnimation {
   }
 
   incrementStepAnimation(timestamp){
-    if (this.pacman.state === "DEAD" && this.stepAnimation > 1) {
-      this.stepAnimation = 2;
+    if (this.pacman.state === "DEAD" && this.stepAnimation > 2) {
+      this.stepAnimation = 3;
       this.stepAnimationTimeStamp = timestamp;
     }
     else {
@@ -112,19 +112,28 @@ export default class PacmanAnimation {
   }
 
   drawDeath(x, y) {
-    console.log(this.stepAnimation);
-    const frameCoord = [{ x: 0, y: 2 }, { x: 2, y: 3 }, { x: 3, y: 2 }]
+    const decalageSource = 6
+    const decalageDestination = 32;
+    const frameCoord = [
+      { x: 0, y: 3 },
+      { x: 0, y: 4 },
+      { x: 2, y: 3 },
+      { x: 3, y: 2 }]
 
     CTX.save();
+
+    const coordX = x * TILE_SIZE - decalageDestination / 2;
+    const coordY = (y - .5)  * TILE_SIZE - decalageDestination / 2;
+    console.log(coordX, coordY);
     
     CTX.drawImage(
       ISAAC_SPRITE,
-      frameCoord[this.stepAnimation].x * SPRITE_SIZE * 2,
-      frameCoord[this.stepAnimation].y * SPRITE_SIZE * 2,
-      TILE_SIZE * 2,
-      TILE_SIZE * 2,
-      x * (TILE_SIZE - 1),
-      y * (TILE_SIZE - 2),
+      frameCoord[this.stepAnimation].x * SPRITE_SIZE * 2 + decalageSource,
+    frameCoord[this.stepAnimation].y * SPRITE_SIZE * 2 + decalageSource * 1.5,
+      TILE_SIZE * 2 - decalageSource * 2,
+      TILE_SIZE * 2 -decalageSource * 2,
+      coordX,
+      coordY,
       TILE_SIZE * 2,
       TILE_SIZE * 2,
     );
@@ -171,6 +180,8 @@ export default class PacmanAnimation {
       x = 0;
       y= 0
     }
+
+    console.log(x, y);
 
     CTX.drawImage(
       ISAAC_SPRITE,

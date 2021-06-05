@@ -146,7 +146,7 @@ exports.ENNEMY_BODY = ENNEMY_BODY;
 },{}],"script/data.json":[function(require,module,exports) {
 module.exports = {
   "animationDuration": 200,
-  "stepAnimationDuration": 50,
+  "stepAnimationDuration": 100,
   "framesStep": 10,
   "spriteSize": 32,
   "tileSize": 32,
@@ -1233,8 +1233,8 @@ var PacmanAnimation = /*#__PURE__*/function () {
   }, {
     key: "incrementStepAnimation",
     value: function incrementStepAnimation(timestamp) {
-      if (this.pacman.state === "DEAD" && this.stepAnimation > 1) {
-        this.stepAnimation = 2;
+      if (this.pacman.state === "DEAD" && this.stepAnimation > 2) {
+        this.stepAnimation = 3;
         this.stepAnimationTimeStamp = timestamp;
       } else {
         this.stepAnimation++;
@@ -1267,10 +1267,14 @@ var PacmanAnimation = /*#__PURE__*/function () {
   }, {
     key: "drawDeath",
     value: function drawDeath(x, y) {
-      console.log(this.stepAnimation);
+      var decalageSource = 6;
+      var decalageDestination = 32;
       var frameCoord = [{
         x: 0,
-        y: 2
+        y: 3
+      }, {
+        x: 0,
+        y: 4
       }, {
         x: 2,
         y: 3
@@ -1281,7 +1285,11 @@ var PacmanAnimation = /*#__PURE__*/function () {
 
       _canvas.CTX.save();
 
-      _canvas.CTX.drawImage(_canvas.ISAAC_SPRITE, frameCoord[this.stepAnimation].x * SPRITE_SIZE * 2, frameCoord[this.stepAnimation].y * SPRITE_SIZE * 2, TILE_SIZE * 2, TILE_SIZE * 2, x * (TILE_SIZE - 1), y * (TILE_SIZE - 2), TILE_SIZE * 2, TILE_SIZE * 2);
+      var coordX = x * TILE_SIZE - decalageDestination / 2;
+      var coordY = (y - .5) * TILE_SIZE - decalageDestination / 2;
+      console.log(coordX, coordY);
+
+      _canvas.CTX.drawImage(_canvas.ISAAC_SPRITE, frameCoord[this.stepAnimation].x * SPRITE_SIZE * 2 + decalageSource, frameCoord[this.stepAnimation].y * SPRITE_SIZE * 2 + decalageSource * 1.5, TILE_SIZE * 2 - decalageSource * 2, TILE_SIZE * 2 - decalageSource * 2, coordX, coordY, TILE_SIZE * 2, TILE_SIZE * 2);
 
       _canvas.CTX.restore();
     }
@@ -1324,6 +1332,8 @@ var PacmanAnimation = /*#__PURE__*/function () {
         x = 0;
         y = 0;
       }
+
+      console.log(x, y);
 
       _canvas.CTX.drawImage(_canvas.ISAAC_SPRITE, stepAnimation * SPRITE_SIZE, spriteIndex * SPRITE_SIZE, TILE_SIZE, TILE_SIZE, x, y, TILE_SIZE + incrementConst, TILE_SIZE + incrementConst);
 
@@ -1738,7 +1748,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "43255" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "33137" + '/');
 
   ws.onmessage = function (event) {
     checkedAssets = {};
