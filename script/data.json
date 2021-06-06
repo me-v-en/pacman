@@ -8,6 +8,7 @@
     "boardHeight": 31,
     "canvasWidth": 840,
     "canvasHeight": 930,
+    "powerUpDuration": 10000,
     "ennemiesData":[
         {
             "initialCoord" : [12,13],

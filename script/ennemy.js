@@ -9,7 +9,7 @@ import EnnemyAnimation from "./ennemyAnimation";
 
 const gameData = require("./data.json");
 
-//STATE : SPAWN, SCATTER, CHASE
+//STATE : SPAWN, SCATTER, CHASE, FLEE, DEAD
 export default class Ennemy {
   constructor(coord) {
     this.init(coord);
@@ -42,6 +42,15 @@ export default class Ennemy {
     this.state = 'SPAWN';
   }
 
+  setFleeMode() {
+    this.ennemyBehaviour.setFleeMode();
+  }
+
+  cancelFleeMode() {
+    this.ennemyBehaviour.cancelFleeMode();
+
+  }
+
   canMove(timestamp) {
     if (!this.beginningGameTimestamp) {
       this.beginningGameTimestamp = timestamp;
@@ -64,6 +73,7 @@ export default class Ennemy {
   }
 
   isPacmanKilled(targetCoord) {
+    if (this.state === 'FLEE' || this.state === 'DEAD') return false;
     return compareArrays(targetCoord, this.currentCoord);
   }
 

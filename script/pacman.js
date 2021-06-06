@@ -25,8 +25,7 @@ export default class Pacman {
     // Coord where the pacman is moving to
   this.movingCoord = coord;
 
-    // Possible state : IDLE, MOVING, DEAD
-    this.state = "IDLE";
+    // Possible state : MOVING, POWERUP, DEAD
 
     // Timestamp fo the start of the animation
 
@@ -34,6 +33,7 @@ export default class Pacman {
 
     this.userInputDirection = "";
     this.inputTimestamp = null;
+    this.powerupTimeout;
   }
 
 
@@ -42,24 +42,11 @@ export default class Pacman {
       return;
     }
 
-        // ADD SCORE
-    this.addPoint();
-    
     this.pacmanBehaviour.update();
   }
 
-  addPoint() {
-    let currentTile = STATE.board.getTile(STATE.pacman.currentCoord);
-
-    if (currentTile.hasPoint || currentTile.hasSuperPoint) {
-      this.addScore(10);
-      currentTile.removePoint();
-    }
-  }    
-
-  addScore(value) {
-    this.setScore(STATE.score + value);
-  }
+  
+  
 
   setScore(score) {
     STATE.score = score;

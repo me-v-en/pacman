@@ -51,11 +51,15 @@ export default class EnnemyBehaviour {
   computePath() {
     // get all possible tiles for the ennemy
     const possibleTiles = this.getPossibleTiles();
-    if (possibleTiles.length > 1 && this.ennemy.state === 'CHASE') {
+    if (possibleTiles.length > 1 && (this.ennemy.state === 'CHASE' || this.ennemy.state === 'FLEE')) {
       this.getTarget();
     }
     // Compute what is the closest possible tile to the target coord
-    const tileToMove = this.computeNearestTileToTarget(possibleTiles);
+    let tileToMove;
+    if (this.ennemy.state === "FLEE") {
+      tileToMove = this.computeFarthestTileToTarget(possibleTiles);
+    }
+    else tileToMove = this.computeNearestTileToTarget(possibleTiles);
     if (!tileToMove) return;
 
     // Set the target coord
@@ -98,6 +102,23 @@ getPossibleTiles() {
     return closestTile;
   }
 
+
+  computeFarthestTileToTarget(possibleTiles) {
+    let targetCoord = this.ennemy.targetCoord;
+    let longestDistance = null;
+    let farthestTile = null;
+
+    possibleTiles.forEach((tile) => {
+      let distance = distanceBetweenCoords(tile.coord, targetCoord);
+      if (longestDistance === null || distance > longestDistance) {
+        longestDistance = distance;
+        farthestTile = tile;
+      }
+    });
+    return farthestTile;
+  }
+
+
   getTarget() {
     if (!this.ennemy.state === 'CHASE') return;
     this.ennemy.justSpawned = false;
@@ -125,7 +146,7 @@ getPossibleTiles() {
         return 'LEFT';
         break;
       default:
-        return null;
+        return '';
     }
   }
 
@@ -136,5 +157,24 @@ getPossibleTiles() {
     window.setTimeout(() => {
       this.ennemy.currentCoord = coord;
     }, ANIMATION_DURATION);
+  }
+
+  setFleeMode() {
+    if (this.ennemy.state === 'SCATTER' || this.ennemy.state === 'CHASE') {
+      this.ennemy.state = 'FLEE';
+      this.direction = '';
+    }
+  }
+
+  cancelFleeMode() {
+    if (this.ennemy.state === 'FLEE') {
+      this.direction = '';
+      this.ennemy.state = 'CHASE';
+    }
+    else this.ennemy.state = 'SPAWN';
+  }
+
+  setOppositeDirection() {
+    this.ennemy.direction = this.getOppositeDirection();
   }
 }

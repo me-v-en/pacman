@@ -1,5 +1,6 @@
 const gameData = require("./data.json");
 const ANIMATION_DURATION = gameData.animationDuration;
+const POWERUP_DURATION = gameData.powerUpDuration;
 
 
 import STATE from "./state";
@@ -15,6 +16,7 @@ export default class PacmanBehaviour {
 
 
   update() {
+    this.processTile();
     // If animation still happening, leave
     let nextTile = this.computePathPacman();
     if (nextTile) {
@@ -22,10 +24,47 @@ export default class PacmanBehaviour {
     } else {
       // If no valid target tile, stop pacman
       this.pacman.direction = "";
-      this.pacman.state = "IDLE";
     }
   }
 
+  processTile() {
+    let currentTile = STATE.board.getTile(this.pacman.currentCoord);
+
+    if (currentTile.hasSuperPoint) {
+      this.startPowerUp();
+    }
+    if (currentTile.hasPoint || currentTile.hasSuperPoint) {
+      this.addScore(10);
+      currentTile.removePoint();
+    }
+
+  }
+
+  addScore(value) {
+    this.pacman.setScore(STATE.score + value);
+  }
+
+  startPowerUp() {  
+    this.pacman.state = "POWERUP";
+
+    STATE.ennemies.forEach((ennemy) => {
+      ennemy.setFleeMode();
+    })
+
+    
+    clearTimeout(this.pacman.powerupTimeout);
+    this.pacman.powerupTimeout = setTimeout(this.resetPowerUp.bind(this), POWERUP_DURATION);
+  }
+
+  resetPowerUp() {
+    if (this.pacman.state === "POWERUP") {
+      this.pacman.state = "MOVING";
+      STATE.ennemies.forEach((ennemy) => {
+        ennemy.cancelFleeMode();
+      })
+    }
+  }
+  
   computePathPacman() {
     // If no direction given, leave
     if (!this.pacman.direction && !this.isUserInputValid()) {

@@ -154,6 +154,7 @@ module.exports = {
   "boardHeight": 31,
   "canvasWidth": 840,
   "canvasHeight": 930,
+  "powerUpDuration": 10000,
   "ennemiesData": [{
     "initialCoord": [12, 13],
     "initialTarget": [13, 11],
@@ -574,12 +575,17 @@ var EnnemyBehaviour = /*#__PURE__*/function () {
       // get all possible tiles for the ennemy
       var possibleTiles = this.getPossibleTiles();
 
-      if (possibleTiles.length > 1 && this.ennemy.state === 'CHASE') {
+      if (possibleTiles.length > 1 && (this.ennemy.state === 'CHASE' || this.ennemy.state === 'FLEE')) {
         this.getTarget();
       } // Compute what is the closest possible tile to the target coord
 
 
-      var tileToMove = this.computeNearestTileToTarget(possibleTiles);
+      var tileToMove;
+
+      if (this.ennemy.state === "FLEE") {
+        tileToMove = this.computeFarthestTileToTarget(possibleTiles);
+      } else tileToMove = this.computeNearestTileToTarget(possibleTiles);
+
       if (!tileToMove) return; // Set the target coord
 
       this.setMovingCoord(tileToMove.coord);
@@ -627,6 +633,22 @@ var EnnemyBehaviour = /*#__PURE__*/function () {
       return closestTile;
     }
   }, {
+    key: "computeFarthestTileToTarget",
+    value: function computeFarthestTileToTarget(possibleTiles) {
+      var targetCoord = this.ennemy.targetCoord;
+      var longestDistance = null;
+      var farthestTile = null;
+      possibleTiles.forEach(function (tile) {
+        var distance = (0, _utils.distanceBetweenCoords)(tile.coord, targetCoord);
+
+        if (longestDistance === null || distance > longestDistance) {
+          longestDistance = distance;
+          farthestTile = tile;
+        }
+      });
+      return farthestTile;
+    }
+  }, {
     key: "getTarget",
     value: function getTarget() {
       if (!this.ennemy.state === 'CHASE') return;
@@ -660,7 +682,7 @@ var EnnemyBehaviour = /*#__PURE__*/function () {
           break;
 
         default:
-          return null;
+          return '';
       }
     }
   }, {
@@ -674,6 +696,27 @@ var EnnemyBehaviour = /*#__PURE__*/function () {
       window.setTimeout(function () {
         _this2.ennemy.currentCoord = coord;
       }, ANIMATION_DURATION);
+    }
+  }, {
+    key: "setFleeMode",
+    value: function setFleeMode() {
+      if (this.ennemy.state === 'SCATTER' || this.ennemy.state === 'CHASE') {
+        this.ennemy.state = 'FLEE';
+        this.direction = '';
+      }
+    }
+  }, {
+    key: "cancelFleeMode",
+    value: function cancelFleeMode() {
+      if (this.ennemy.state === 'FLEE') {
+        this.direction = '';
+        this.ennemy.state = 'CHASE';
+      } else this.ennemy.state = 'SPAWN';
+    }
+  }, {
+    key: "setOppositeDirection",
+    value: function setOppositeDirection() {
+      this.ennemy.direction = this.getOppositeDirection();
     }
   }]);
 
@@ -922,7 +965,7 @@ function _defineProperties(target, props) { for (var i = 0; i < props.length; i+
 
 function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
 
-var gameData = require("./data.json"); //STATE : SPAWN, SCATTER, CHASE
+var gameData = require("./data.json"); //STATE : SPAWN, SCATTER, CHASE, FLEE, DEAD
 
 
 var Ennemy = /*#__PURE__*/function () {
@@ -955,6 +998,16 @@ var Ennemy = /*#__PURE__*/function () {
       this.state = 'SPAWN';
     }
   }, {
+    key: "setFleeMode",
+    value: function setFleeMode() {
+      this.ennemyBehaviour.setFleeMode();
+    }
+  }, {
+    key: "cancelFleeMode",
+    value: function cancelFleeMode() {
+      this.ennemyBehaviour.cancelFleeMode();
+    }
+  }, {
     key: "canMove",
     value: function canMove(timestamp) {
       if (!this.beginningGameTimestamp) {
@@ -979,6 +1032,7 @@ var Ennemy = /*#__PURE__*/function () {
   }, {
     key: "isPacmanKilled",
     value: function isPacmanKilled(targetCoord) {
+      if (this.state === 'FLEE' || this.state === 'DEAD') return false;
       return (0, _utils.compareArrays)(targetCoord, this.currentCoord);
     }
   }, {
@@ -1023,6 +1077,7 @@ function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _d
 var gameData = require("./data.json");
 
 var ANIMATION_DURATION = gameData.animationDuration;
+var POWERUP_DURATION = gameData.powerUpDuration;
 
 var PacmanBehaviour = /*#__PURE__*/function () {
   function PacmanBehaviour(pacman) {
@@ -1039,7 +1094,8 @@ var PacmanBehaviour = /*#__PURE__*/function () {
   }, {
     key: "update",
     value: function update() {
-      // If animation still happening, leave
+      this.processTile(); // If animation still happening, leave
+
       var nextTile = this.computePathPacman();
 
       if (nextTile) {
@@ -1047,7 +1103,48 @@ var PacmanBehaviour = /*#__PURE__*/function () {
       } else {
         // If no valid target tile, stop pacman
         this.pacman.direction = "";
-        this.pacman.state = "IDLE";
+      }
+    }
+  }, {
+    key: "processTile",
+    value: function processTile() {
+      var currentTile = _state.default.board.getTile(this.pacman.currentCoord);
+
+      if (currentTile.hasSuperPoint) {
+        this.startPowerUp();
+      }
+
+      if (currentTile.hasPoint || currentTile.hasSuperPoint) {
+        this.addScore(10);
+        currentTile.removePoint();
+      }
+    }
+  }, {
+    key: "addScore",
+    value: function addScore(value) {
+      this.pacman.setScore(_state.default.score + value);
+    }
+  }, {
+    key: "startPowerUp",
+    value: function startPowerUp() {
+      this.pacman.state = "POWERUP";
+
+      _state.default.ennemies.forEach(function (ennemy) {
+        ennemy.setFleeMode();
+      });
+
+      clearTimeout(this.pacman.powerupTimeout);
+      this.pacman.powerupTimeout = setTimeout(this.resetPowerUp.bind(this), POWERUP_DURATION);
+    }
+  }, {
+    key: "resetPowerUp",
+    value: function resetPowerUp() {
+      if (this.pacman.state === "POWERUP") {
+        this.pacman.state = "MOVING";
+
+        _state.default.ennemies.forEach(function (ennemy) {
+          ennemy.cancelFleeMode();
+        });
       }
     }
   }, {
@@ -1211,7 +1308,11 @@ var PacmanAnimation = /*#__PURE__*/function () {
     value: function getCoordToDraw() {
       var x, y;
 
-      if (this.pacman.state === "MOVING") {
+      if (!this.pacman.direction || this.pacman.state === "DEAD") {
+        // If idle, set the pacman at the position of the tile
+        x = this.pacman.currentCoord[0];
+        y = this.pacman.currentCoord[1];
+      } else if (this.pacman.state === "MOVING") {
         // Get the percentage of progress of the anim
         var animationProgress = this.getProgressOfAnimation(); //Delta of the current tile and target tiles
 
@@ -1220,12 +1321,6 @@ var PacmanAnimation = /*#__PURE__*/function () {
 
         x = this.pacman.currentCoord[0] + deltaX * animationProgress;
         y = this.pacman.currentCoord[1] + deltaY * animationProgress; // Setting the position of the pacman
-      }
-
-      if (this.pacman.state === "IDLE" || this.pacman.state === "DEAD") {
-        // If idle, set the pacman at the position of the tile
-        x = this.pacman.currentCoord[0];
-        y = this.pacman.currentCoord[1];
       }
 
       return [x, y];
@@ -1432,39 +1527,22 @@ var Pacman = /*#__PURE__*/function () {
       // Actual coord of the pacman
       this.currentCoord = coord; // Coord where the pacman is moving to
 
-      this.movingCoord = coord; // Possible state : IDLE, MOVING, DEAD
-
-      this.state = "IDLE"; // Timestamp fo the start of the animation
+      this.movingCoord = coord; // Possible state : MOVING, POWERUP, DEAD
+      // Timestamp fo the start of the animation
 
       this.direction = "";
       this.userInputDirection = "";
       this.inputTimestamp = null;
+      this.powerupTimeout;
     }
   }, {
     key: "update",
     value: function update() {
       if (!this.isAnimationFinished()) {
         return;
-      } // ADD SCORE
-
-
-      this.addPoint();
-      this.pacmanBehaviour.update();
-    }
-  }, {
-    key: "addPoint",
-    value: function addPoint() {
-      var currentTile = _state.default.board.getTile(_state.default.pacman.currentCoord);
-
-      if (currentTile.hasPoint || currentTile.hasSuperPoint) {
-        this.addScore(10);
-        currentTile.removePoint();
       }
-    }
-  }, {
-    key: "addScore",
-    value: function addScore(value) {
-      this.setScore(_state.default.score + value);
+
+      this.pacmanBehaviour.update();
     }
   }, {
     key: "setScore",
@@ -1745,7 +1823,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "45949" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "35467" + '/');
 
   ws.onmessage = function (event) {
     checkedAssets = {};

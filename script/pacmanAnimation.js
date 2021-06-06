@@ -56,8 +56,13 @@ export default class PacmanAnimation {
   }
 
   getCoordToDraw(){
-    let x,y;
-    if (this.pacman.state === "MOVING") {
+    let x, y;
+    if (!this.pacman.direction || this.pacman.state === "DEAD") {
+      // If idle, set the pacman at the position of the tile
+      x = this.pacman.currentCoord[0];
+      y = this.pacman.currentCoord[1];
+    }
+    else if (this.pacman.state === "MOVING") {
       // Get the percentage of progress of the anim
       let animationProgress = this.getProgressOfAnimation();
       //Delta of the current tile and target tiles
@@ -70,11 +75,7 @@ export default class PacmanAnimation {
 
       // Setting the position of the pacman
     }
-    if (this.pacman.state === "IDLE" || this.pacman.state === "DEAD") {
-      // If idle, set the pacman at the position of the tile
-      x = this.pacman.currentCoord[0];
-      y = this.pacman.currentCoord[1];
-    }
+
     return[x,y];
   }
 
