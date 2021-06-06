@@ -1287,7 +1287,6 @@ var PacmanAnimation = /*#__PURE__*/function () {
 
       var coordX = x * TILE_SIZE - decalageDestination / 2;
       var coordY = (y - .5) * TILE_SIZE - decalageDestination / 2;
-      console.log(coordX, coordY);
 
       _canvas.CTX.drawImage(_canvas.ISAAC_SPRITE, frameCoord[this.stepAnimation].x * SPRITE_SIZE * 2 + decalageSource, frameCoord[this.stepAnimation].y * SPRITE_SIZE * 2 + decalageSource * 1.5, TILE_SIZE * 2 - decalageSource * 2, TILE_SIZE * 2 - decalageSource * 2, coordX, coordY, TILE_SIZE * 2, TILE_SIZE * 2);
 
@@ -1332,8 +1331,6 @@ var PacmanAnimation = /*#__PURE__*/function () {
         x = 0;
         y = 0;
       }
-
-      console.log(x, y);
 
       _canvas.CTX.drawImage(_canvas.ISAAC_SPRITE, stepAnimation * SPRITE_SIZE, spriteIndex * SPRITE_SIZE, TILE_SIZE, TILE_SIZE, x, y, TILE_SIZE + incrementConst, TILE_SIZE + incrementConst);
 
@@ -1748,7 +1745,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "33137" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "35467" + '/');
 
   ws.onmessage = function (event) {
     checkedAssets = {};

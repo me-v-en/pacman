@@ -124,7 +124,6 @@ export default class PacmanAnimation {
 
     const coordX = x * TILE_SIZE - decalageDestination / 2;
     const coordY = (y - .5)  * TILE_SIZE - decalageDestination / 2;
-    console.log(coordX, coordY);
     
     CTX.drawImage(
       ISAAC_SPRITE,
@@ -180,8 +179,6 @@ export default class PacmanAnimation {
       x = 0;
       y= 0
     }
-
-    console.log(x, y);
 
     CTX.drawImage(
       ISAAC_SPRITE,
