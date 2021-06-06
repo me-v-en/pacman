@@ -1,6 +1,6 @@
 {
     "animationDuration": 200,
-    "stepAnimationDuration": 100,
+    "stepAnimationDuration": 80,
     "framesStep": 10,
     "spriteSize": 32,
     "tileSize": 32,

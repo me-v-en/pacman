@@ -146,7 +146,7 @@ exports.ENNEMY_BODY = ENNEMY_BODY;
 },{}],"script/data.json":[function(require,module,exports) {
 module.exports = {
   "animationDuration": 200,
-  "stepAnimationDuration": 100,
+  "stepAnimationDuration": 80,
   "framesStep": 10,
   "spriteSize": 32,
   "tileSize": 32,
@@ -1745,7 +1745,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "35467" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "45949" + '/');
 
   ws.onmessage = function (event) {
     checkedAssets = {};
