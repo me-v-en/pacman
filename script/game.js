@@ -5,19 +5,10 @@ import {
 } from "./canvas";
 import Ennemy from "./ennemy";
 import Pacman from "./pacman";
-import Tile from "./tile";
 import STATE from "./state";
 
 const gameData = require("./data.json");
 const ENNEMIES_DATA = gameData.ennemiesData;
-const DIRECTIONS = ['DOWN', 'UP', 'RIGHT', 'LEFT'];
-
-import {
-  modulo,
-  DIRECTION_MATRICES,
-  addCoord,
-  distanceBetweenCoords
-} from "./utils";
 
 export default class Game {
   constructor() {
@@ -65,12 +56,24 @@ export default class Game {
   }
   
   updateGameState() {
+    if (STATE.pacman.state === 'POWERUP') {
+      this.killTouchedEnnemies();
+    }
     if (this.isPacmanDead()) {
       STATE.pacman.setDead();
       STATE.gameState = 'END';
     }
   }
 
+  killTouchedEnnemies() {
+    for (let i = 0; i < STATE.ennemies.length; i++){
+      let ennemy = STATE.ennemies[i];
+      if (ennemy.isKilled(STATE.pacman.currentCoord)) {
+        ennemy.setDead();
+      }
+    }
+    
+  }
 
   isPacmanDead() {
     let pacmanIsDead = false;
@@ -96,7 +99,7 @@ export default class Game {
 
 
   ////////////////////////////////////
-  // GHOSTS
+  // ENNEMIES
   ////////////////////////////////////
   initEnnemies() {
     const ennemies = [];

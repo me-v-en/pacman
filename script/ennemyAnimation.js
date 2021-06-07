@@ -24,7 +24,7 @@ export default class EnnemyAnimation {
 
 
   draw(timestamp) {
-    if (this.characterIsOutOfScreen()) {
+    if (this.characterIsOutOfScreen() || this.ennemy.state === 'DEAD') {
       return;
     }
     if(!this.stepAnimationTimeStamp){

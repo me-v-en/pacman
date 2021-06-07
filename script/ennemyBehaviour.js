@@ -27,7 +27,9 @@ export default class EnnemyBehaviour {
   update(timestamp) {
     this.updateState();
 
-    this.computePath();
+    if (this.ennemy.state !== 'DEAD') {
+      this.computePath();      
+    }
   }
 
   updateState() {
@@ -167,11 +169,15 @@ getPossibleTiles() {
   }
 
   cancelFleeMode() {
+    var initialState = this.ennemy.state;
     if (this.ennemy.state === 'FLEE') {
       this.direction = '';
       this.ennemy.state = 'CHASE';
     }
-    else this.ennemy.state = 'SPAWN';
+    if (this.ennemy.state === 'DEAD') {
+      this.ennemy.initInitialProperties();
+    }
+    console.log(initialState, ' => ', this.ennemy.state);
   }
 
   setOppositeDirection() {

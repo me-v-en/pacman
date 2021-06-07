@@ -62,7 +62,7 @@ export default class PacmanAnimation {
       x = this.pacman.currentCoord[0];
       y = this.pacman.currentCoord[1];
     }
-    else if (this.pacman.state === "MOVING") {
+    else{
       // Get the percentage of progress of the anim
       let animationProgress = this.getProgressOfAnimation();
       //Delta of the current tile and target tiles

@@ -57,9 +57,11 @@ export default class PacmanBehaviour {
   }
 
   resetPowerUp() {
+    console.log("resetPowerup");
     if (this.pacman.state === "POWERUP") {
-      this.pacman.state = "MOVING";
-      STATE.ennemies.forEach((ennemy) => {
+      this.pacman.state = "NORMAL";
+      STATE.ennemies.forEach((ennemy, index) => {
+        console.log('ennemy =>', index);
         ennemy.cancelFleeMode();
       })
     }
@@ -98,7 +100,6 @@ export default class PacmanBehaviour {
 
 
   setMovingCoord(coord) {
-    this.pacman.state = "MOVING";
     this.pacman.movingCoord = coord;
     this.pacman.animTimestamp = new Date().getTime();
     window.setTimeout(() => {

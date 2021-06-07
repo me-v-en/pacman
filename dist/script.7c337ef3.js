@@ -542,7 +542,10 @@ var EnnemyBehaviour = /*#__PURE__*/function () {
     key: "update",
     value: function update(timestamp) {
       this.updateState();
-      this.computePath();
+
+      if (this.ennemy.state !== 'DEAD') {
+        this.computePath();
+      }
     }
   }, {
     key: "updateState",
@@ -708,10 +711,18 @@ var EnnemyBehaviour = /*#__PURE__*/function () {
   }, {
     key: "cancelFleeMode",
     value: function cancelFleeMode() {
+      var initialState = this.ennemy.state;
+
       if (this.ennemy.state === 'FLEE') {
         this.direction = '';
         this.ennemy.state = 'CHASE';
-      } else this.ennemy.state = 'SPAWN';
+      }
+
+      if (this.ennemy.state === 'DEAD') {
+        this.ennemy.initInitialProperties();
+      }
+
+      console.log(initialState, ' => ', this.ennemy.state);
     }
   }, {
     key: "setOppositeDirection",
@@ -782,7 +793,7 @@ var EnnemyAnimation = /*#__PURE__*/function () {
   }, {
     key: "draw",
     value: function draw(timestamp) {
-      if (this.characterIsOutOfScreen()) {
+      if (this.characterIsOutOfScreen() || this.ennemy.state === 'DEAD') {
         return;
       }
 
@@ -969,26 +980,32 @@ var gameData = require("./data.json"); //STATE : SPAWN, SCATTER, CHASE, FLEE, DE
 
 
 var Ennemy = /*#__PURE__*/function () {
-  function Ennemy(coord) {
+  function Ennemy(ennemyData) {
     _classCallCheck(this, Ennemy);
 
-    this.init(coord);
+    this.ennemyData = ennemyData;
+    this.initPermanentProperties();
+    this.initInitialProperties();
     this.ennemyBehaviour = new _ennemyBehaviour.default(this);
     this.ennemyAnimation = new _ennemyAnimation.default(this);
   }
 
   _createClass(Ennemy, [{
-    key: "init",
-    value: function init(ennemyData) {
-      this.ennemyData = ennemyData; // Actual coord
-
-      this.currentCoord = ennemyData.initialCoord; // Coord where the pacman is moving to
+    key: "initPermanentProperties",
+    value: function initPermanentProperties() {
+      this.beginningGameTimestamp = null;
+    }
+  }, {
+    key: "initInitialProperties",
+    value: function initInitialProperties() {
+      // Actual coord
+      this.currentCoord = this.ennemyData.initialCoord; // Coord where the pacman is moving to
 
       this.movingCoord = this.currentCoord; // Position of the gate to move to
 
-      this.targetCoord = ennemyData.initialTarget;
-      this.scatterCoord = ennemyData.scatterTarget;
-      this.spawnTimeout = ennemyData.spawnTimeout;
+      this.targetCoord = this.ennemyData.initialTarget;
+      this.scatterCoord = this.ennemyData.scatterTarget;
+      this.spawnTimeout = this.ennemyData.spawnTimeout;
       this.justSpawned = true; // Timestamp fo the start of the animation
 
       this.direction = "";
@@ -1036,6 +1053,12 @@ var Ennemy = /*#__PURE__*/function () {
       return (0, _utils.compareArrays)(targetCoord, this.currentCoord);
     }
   }, {
+    key: "isKilled",
+    value: function isKilled(targetCoord) {
+      if (this.state === 'DEAD') return false;
+      return (0, _utils.compareArrays)(targetCoord, this.currentCoord);
+    }
+  }, {
     key: "isAnimationFinished",
     value: function isAnimationFinished() {
       return this.currentCoord === this.movingCoord;
@@ -1049,6 +1072,11 @@ var Ennemy = /*#__PURE__*/function () {
     key: "draw",
     value: function draw(timestamp) {
       this.ennemyAnimation.draw(timestamp);
+    }
+  }, {
+    key: "setDead",
+    value: function setDead() {
+      this.state = 'DEAD'; // console.log('SET ENNEMY DEAD : ', this.state);
     }
   }]);
 
@@ -1139,10 +1167,13 @@ var PacmanBehaviour = /*#__PURE__*/function () {
   }, {
     key: "resetPowerUp",
     value: function resetPowerUp() {
-      if (this.pacman.state === "POWERUP") {
-        this.pacman.state = "MOVING";
+      console.log("resetPowerup");
 
-        _state.default.ennemies.forEach(function (ennemy) {
+      if (this.pacman.state === "POWERUP") {
+        this.pacman.state = "NORMAL";
+
+        _state.default.ennemies.forEach(function (ennemy, index) {
+          console.log('ennemy =>', index);
           ennemy.cancelFleeMode();
         });
       }
@@ -1178,7 +1209,6 @@ var PacmanBehaviour = /*#__PURE__*/function () {
     value: function setMovingCoord(coord) {
       var _this = this;
 
-      this.pacman.state = "MOVING";
       this.pacman.movingCoord = coord;
       this.pacman.animTimestamp = new Date().getTime();
       window.setTimeout(function () {
@@ -1312,7 +1342,7 @@ var PacmanAnimation = /*#__PURE__*/function () {
         // If idle, set the pacman at the position of the tile
         x = this.pacman.currentCoord[0];
         y = this.pacman.currentCoord[1];
-      } else if (this.pacman.state === "MOVING") {
+      } else {
         // Get the percentage of progress of the anim
         var animationProgress = this.getProgressOfAnimation(); //Delta of the current tile and target tiles
 
@@ -1503,14 +1533,6 @@ function _defineProperties(target, props) { for (var i = 0; i < props.length; i+
 
 function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
 
-var gameData = require("./data.json");
-
-var TILE_SIZE = gameData.tileSize;
-var SPRITE_SIZE = gameData.spriteSize;
-var ANIMATION_DURATION = gameData.animationDuration;
-var STEP_DURATION = gameData.stepAnimationDuration;
-var FRAMES_STEP = gameData.framesStep;
-
 var Pacman = /*#__PURE__*/function () {
   function Pacman(coord) {
     _classCallCheck(this, Pacman);
@@ -1527,13 +1549,14 @@ var Pacman = /*#__PURE__*/function () {
       // Actual coord of the pacman
       this.currentCoord = coord; // Coord where the pacman is moving to
 
-      this.movingCoord = coord; // Possible state : MOVING, POWERUP, DEAD
+      this.movingCoord = coord; // Possible state : NORMAL, POWERUP, DEAD
       // Timestamp fo the start of the animation
 
       this.direction = "";
       this.userInputDirection = "";
       this.inputTimestamp = null;
       this.powerupTimeout;
+      this.state = 'NORMAL';
     }
   }, {
     key: "update",
@@ -1577,7 +1600,7 @@ var Pacman = /*#__PURE__*/function () {
 }();
 
 exports.default = Pacman;
-},{"./canvas":"script/canvas.js","./pacmanBehaviour":"script/pacmanBehaviour.js","./pacmanAnimation":"script/pacmanAnimation.js","./state":"script/state.js","./data.json":"script/data.json"}],"script/game.js":[function(require,module,exports) {
+},{"./canvas":"script/canvas.js","./pacmanBehaviour":"script/pacmanBehaviour.js","./pacmanAnimation":"script/pacmanAnimation.js","./state":"script/state.js"}],"script/game.js":[function(require,module,exports) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -1593,11 +1616,7 @@ var _ennemy = _interopRequireDefault(require("./ennemy"));
 
 var _pacman = _interopRequireDefault(require("./pacman"));
 
-var _tile = _interopRequireDefault(require("./tile"));
-
 var _state = _interopRequireDefault(require("./state"));
-
-var _utils = require("./utils");
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -1610,7 +1629,6 @@ function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _d
 var gameData = require("./data.json");
 
 var ENNEMIES_DATA = gameData.ennemiesData;
-var DIRECTIONS = ['DOWN', 'UP', 'RIGHT', 'LEFT'];
 
 var Game = /*#__PURE__*/function () {
   function Game() {
@@ -1662,10 +1680,25 @@ var Game = /*#__PURE__*/function () {
   }, {
     key: "updateGameState",
     value: function updateGameState() {
+      if (_state.default.pacman.state === 'POWERUP') {
+        this.killTouchedEnnemies();
+      }
+
       if (this.isPacmanDead()) {
         _state.default.pacman.setDead();
 
         _state.default.gameState = 'END';
+      }
+    }
+  }, {
+    key: "killTouchedEnnemies",
+    value: function killTouchedEnnemies() {
+      for (var i = 0; i < _state.default.ennemies.length; i++) {
+        var ennemy = _state.default.ennemies[i];
+
+        if (ennemy.isKilled(_state.default.pacman.currentCoord)) {
+          ennemy.setDead();
+        }
       }
     }
   }, {
@@ -1699,7 +1732,7 @@ var Game = /*#__PURE__*/function () {
 
       _state.default.pacman.draw(timestamp);
     } ////////////////////////////////////
-    // GHOSTS
+    // ENNEMIES
     ////////////////////////////////////
 
   }, {
@@ -1773,7 +1806,7 @@ var Game = /*#__PURE__*/function () {
 }();
 
 exports.default = Game;
-},{"./board":"script/board.js","./canvas":"script/canvas.js","./ennemy":"script/ennemy.js","./pacman":"script/pacman.js","./tile":"script/tile.js","./state":"script/state.js","./data.json":"script/data.json","./utils":"script/utils.js"}],"script/index.js":[function(require,module,exports) {
+},{"./board":"script/board.js","./canvas":"script/canvas.js","./ennemy":"script/ennemy.js","./pacman":"script/pacman.js","./state":"script/state.js","./data.json":"script/data.json"}],"script/index.js":[function(require,module,exports) {
 "use strict";
 
 var _game = _interopRequireDefault(require("./game"));
@@ -1823,7 +1856,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "35467" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "35595" + '/');
 
   ws.onmessage = function (event) {
     checkedAssets = {};

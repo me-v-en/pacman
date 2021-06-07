@@ -4,13 +4,6 @@ import PacmanBehaviour from "./pacmanBehaviour";
 import PacmanAnimation from "./pacmanAnimation";
 
 import STATE from "./state";
-
-const gameData = require("./data.json");
-const TILE_SIZE = gameData.tileSize;
-const SPRITE_SIZE = gameData.spriteSize;
-const ANIMATION_DURATION = gameData.animationDuration;
-const STEP_DURATION = gameData.stepAnimationDuration;
-const FRAMES_STEP = gameData.framesStep;
 export default class Pacman {
   constructor(coord) {
     this.init(coord);
@@ -25,7 +18,7 @@ export default class Pacman {
     // Coord where the pacman is moving to
   this.movingCoord = coord;
 
-    // Possible state : MOVING, POWERUP, DEAD
+    // Possible state : NORMAL, POWERUP, DEAD
 
     // Timestamp fo the start of the animation
 
@@ -34,6 +27,7 @@ export default class Pacman {
     this.userInputDirection = "";
     this.inputTimestamp = null;
     this.powerupTimeout;
+    this.state = 'NORMAL';
   }
 
 

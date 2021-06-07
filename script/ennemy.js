@@ -1,7 +1,5 @@
 import {
-  getDirectionFromCoord,
-  compareArrays,
-  substractCoord
+  compareArrays
 } from "./utils";
 
 import EnnemyBehaviour from "./ennemyBehaviour";
@@ -11,24 +9,30 @@ const gameData = require("./data.json");
 
 //STATE : SPAWN, SCATTER, CHASE, FLEE, DEAD
 export default class Ennemy {
-  constructor(coord) {
-    this.init(coord);
+  constructor(ennemyData) {
+    this.ennemyData = ennemyData;
+    this.initPermanentProperties();
+    this.initInitialProperties();
+
     this.ennemyBehaviour = new EnnemyBehaviour(this);
     this.ennemyAnimation = new EnnemyAnimation(this);
   }
 
-  init(ennemyData) {
-    this.ennemyData = ennemyData;
+  initPermanentProperties() {
+    this.beginningGameTimestamp = null;
+  }
+
+  initInitialProperties() {
     // Actual coord
-    this.currentCoord = ennemyData.initialCoord;
+    this.currentCoord = this.ennemyData.initialCoord;
 
     // Coord where the pacman is moving to
     this.movingCoord = this.currentCoord;
 
     // Position of the gate to move to
-    this.targetCoord = ennemyData.initialTarget;
-    this.scatterCoord = ennemyData.scatterTarget;
-    this.spawnTimeout = ennemyData.spawnTimeout;
+    this.targetCoord = this.ennemyData.initialTarget;
+    this.scatterCoord = this.ennemyData.scatterTarget;
+    this.spawnTimeout = this.ennemyData.spawnTimeout;
     this.justSpawned = true;
 
     // Timestamp fo the start of the animation
@@ -77,6 +81,11 @@ export default class Ennemy {
     return compareArrays(targetCoord, this.currentCoord);
   }
 
+  isKilled(targetCoord) {
+    if (this.state === 'DEAD') return false;
+    return compareArrays(targetCoord, this.currentCoord);
+  }
+
   isAnimationFinished() {
     return this.currentCoord === this.movingCoord;
   }
@@ -87,5 +96,10 @@ export default class Ennemy {
 
   draw(timestamp) {
     this.ennemyAnimation.draw(timestamp);
+  }
+
+  setDead() {
+    this.state = 'DEAD';
+    // console.log('SET ENNEMY DEAD : ', this.state);
   }
 }
