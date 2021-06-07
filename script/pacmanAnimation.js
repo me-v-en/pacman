@@ -1,7 +1,6 @@
 const gameData = require("./data.json");
 const TILE_SIZE = gameData.tileSize;
 const SPRITE_SIZE = gameData.spriteSize;
-const ANIMATION_DURATION = gameData.animationDuration;
 const STEP_DURATION = gameData.stepAnimationDuration;
 const FRAMES_STEP = gameData.framesStep;
 
@@ -18,6 +17,7 @@ export default class PacmanAnimation {
     this.pacman = pacman;
     this.stepAnimationTimeStamp = null;
     this.stepAnimation = 0;
+    this.speed = 0;
     this.isFrameAfterDeath = false;
   }
 
@@ -94,7 +94,7 @@ export default class PacmanAnimation {
 
   getProgressOfAnimation() {
     let currentTimeStamp = new Date().getTime();
-    return (currentTimeStamp - this.pacman.animTimestamp) / ANIMATION_DURATION;
+    return (currentTimeStamp - this.pacman.animTimestamp) / this.pacman.speed;
   }
 
 

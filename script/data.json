@@ -1,5 +1,8 @@
 {
     "animationDuration": 200,
+    "normalPacmanSpeed": 1,
+    "normalEnnemySpeed": 0.9,
+    "fleeEnnemySpeed": 0.5,
     "stepAnimationDuration": 80,
     "framesStep": 10,
     "spriteSize": 32,

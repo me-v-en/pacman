@@ -146,6 +146,9 @@ exports.ENNEMY_BODY = ENNEMY_BODY;
 },{}],"script/data.json":[function(require,module,exports) {
 module.exports = {
   "animationDuration": 200,
+  "normalPacmanSpeed": 1,
+  "normalEnnemySpeed": 0.9,
+  "fleeEnnemySpeed": 0.5,
   "stepAnimationDuration": 80,
   "framesStep": 10,
   "spriteSize": 32,
@@ -524,6 +527,8 @@ function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _d
 var gameData = require("./data.json");
 
 var ANIMATION_DURATION = gameData.animationDuration;
+var NORMAL_SPEED = gameData.normalEnnemySpeed;
+var FLEE_SPEED = gameData.fleeEnnemySpeed;
 var DIRECTIONS = ['DOWN', 'UP', 'RIGHT', 'LEFT'];
 
 var EnnemyBehaviour = /*#__PURE__*/function () {
@@ -542,6 +547,7 @@ var EnnemyBehaviour = /*#__PURE__*/function () {
     key: "update",
     value: function update(timestamp) {
       this.updateState();
+      this.setSpeed();
 
       if (this.ennemy.state !== 'DEAD') {
         this.computePath();
@@ -571,6 +577,13 @@ var EnnemyBehaviour = /*#__PURE__*/function () {
         case 'CHASE':
           break;
       }
+    }
+  }, {
+    key: "setSpeed",
+    value: function setSpeed() {
+      if (this.ennemy.state === 'FLEE') {
+        this.ennemy.speed = ANIMATION_DURATION * (1 / FLEE_SPEED);
+      } else this.ennemy.speed = ANIMATION_DURATION * (1 / NORMAL_SPEED);
     }
   }, {
     key: "computePath",
@@ -698,7 +711,7 @@ var EnnemyBehaviour = /*#__PURE__*/function () {
       this.ennemy.direction = this.computeDirection();
       window.setTimeout(function () {
         _this2.ennemy.currentCoord = coord;
-      }, ANIMATION_DURATION);
+      }, this.ennemy.speed);
     }
   }, {
     key: "setFleeMode",
@@ -771,7 +784,6 @@ var gameData = require("./data.json");
 
 var TILE_SIZE = gameData.tileSize;
 var SPRITE_SIZE = gameData.spriteSize;
-var ANIMATION_DURATION = gameData.animationDuration;
 var STEP_DURATION = gameData.stepAnimationDuration;
 var FRAMES_STEP = gameData.framesStep;
 var DIRECTIONS = ['DOWN', 'RIGHT', 'UP', 'LEFT'];
@@ -860,7 +872,7 @@ var EnnemyAnimation = /*#__PURE__*/function () {
     key: "getProgressOfAnimation",
     value: function getProgressOfAnimation() {
       var currentTimeStamp = new Date().getTime();
-      return (currentTimeStamp - this.ennemy.animTimestamp) / ANIMATION_DURATION;
+      return (currentTimeStamp - this.ennemy.animTimestamp) / this.ennemy.speed;
     }
   }, {
     key: "drawOnCanvas",
@@ -1105,6 +1117,7 @@ function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _d
 var gameData = require("./data.json");
 
 var ANIMATION_DURATION = gameData.animationDuration;
+var NORMAL_SPEED = gameData.normalPacmanSpeed;
 var POWERUP_DURATION = gameData.powerUpDuration;
 
 var PacmanBehaviour = /*#__PURE__*/function () {
@@ -1122,7 +1135,8 @@ var PacmanBehaviour = /*#__PURE__*/function () {
   }, {
     key: "update",
     value: function update() {
-      this.processTile(); // If animation still happening, leave
+      this.processTile();
+      this.setSpeed(); // If animation still happening, leave
 
       var nextTile = this.computePathPacman();
 
@@ -1132,6 +1146,11 @@ var PacmanBehaviour = /*#__PURE__*/function () {
         // If no valid target tile, stop pacman
         this.pacman.direction = "";
       }
+    }
+  }, {
+    key: "setSpeed",
+    value: function setSpeed() {
+      this.pacman.speed = ANIMATION_DURATION * (1 / NORMAL_SPEED);
     }
   }, {
     key: "processTile",
@@ -1213,7 +1232,7 @@ var PacmanBehaviour = /*#__PURE__*/function () {
       this.pacman.animTimestamp = new Date().getTime();
       window.setTimeout(function () {
         _this.pacman.currentCoord = coord;
-      }, ANIMATION_DURATION);
+      }, this.pacman.speed);
     }
   }, {
     key: "isUserInputValid",
@@ -1269,7 +1288,6 @@ var gameData = require("./data.json");
 
 var TILE_SIZE = gameData.tileSize;
 var SPRITE_SIZE = gameData.spriteSize;
-var ANIMATION_DURATION = gameData.animationDuration;
 var STEP_DURATION = gameData.stepAnimationDuration;
 var FRAMES_STEP = gameData.framesStep;
 
@@ -1286,6 +1304,7 @@ var PacmanAnimation = /*#__PURE__*/function () {
       this.pacman = pacman;
       this.stepAnimationTimeStamp = null;
       this.stepAnimation = 0;
+      this.speed = 0;
       this.isFrameAfterDeath = false;
     }
   }, {
@@ -1371,7 +1390,7 @@ var PacmanAnimation = /*#__PURE__*/function () {
     key: "getProgressOfAnimation",
     value: function getProgressOfAnimation() {
       var currentTimeStamp = new Date().getTime();
-      return (currentTimeStamp - this.pacman.animTimestamp) / ANIMATION_DURATION;
+      return (currentTimeStamp - this.pacman.animTimestamp) / this.pacman.speed;
     }
   }, {
     key: "drawOnCanvas",

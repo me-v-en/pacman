@@ -1,5 +1,7 @@
 const gameData = require("./data.json");
 const ANIMATION_DURATION = gameData.animationDuration;
+const NORMAL_SPEED = gameData.normalEnnemySpeed;
+const FLEE_SPEED = gameData.fleeEnnemySpeed;
 
 
 import STATE from "./state";
@@ -26,6 +28,7 @@ export default class EnnemyBehaviour {
 
   update(timestamp) {
     this.updateState();
+    this.setSpeed();
 
     if (this.ennemy.state !== 'DEAD') {
       this.computePath();      
@@ -48,6 +51,13 @@ export default class EnnemyBehaviour {
       case 'CHASE':
         break;
     }
+  }
+
+  setSpeed(){
+    if (this.ennemy.state === 'FLEE') {
+      this.ennemy.speed = ANIMATION_DURATION * (1/FLEE_SPEED);
+    }
+    else this.ennemy.speed = ANIMATION_DURATION * (1/NORMAL_SPEED);
   }
 
   computePath() {
@@ -158,7 +168,7 @@ getPossibleTiles() {
     this.ennemy.direction = this.computeDirection();
     window.setTimeout(() => {
       this.ennemy.currentCoord = coord;
-    }, ANIMATION_DURATION);
+    }, this.ennemy.speed);
   }
 
   setFleeMode() {

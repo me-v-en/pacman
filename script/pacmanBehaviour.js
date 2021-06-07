@@ -1,5 +1,6 @@
 const gameData = require("./data.json");
 const ANIMATION_DURATION = gameData.animationDuration;
+const NORMAL_SPEED = gameData.normalPacmanSpeed;
 const POWERUP_DURATION = gameData.powerUpDuration;
 
 
@@ -17,6 +18,7 @@ export default class PacmanBehaviour {
 
   update() {
     this.processTile();
+    this.setSpeed();
     // If animation still happening, leave
     let nextTile = this.computePathPacman();
     if (nextTile) {
@@ -25,6 +27,10 @@ export default class PacmanBehaviour {
       // If no valid target tile, stop pacman
       this.pacman.direction = "";
     }
+  }
+
+  setSpeed() {
+    this.pacman.speed = ANIMATION_DURATION * (1/NORMAL_SPEED);
   }
 
   processTile() {
@@ -104,7 +110,7 @@ export default class PacmanBehaviour {
     this.pacman.animTimestamp = new Date().getTime();
     window.setTimeout(() => {
       this.pacman.currentCoord = coord;
-    }, ANIMATION_DURATION);
+    }, this.pacman.speed);
   }
 
 
