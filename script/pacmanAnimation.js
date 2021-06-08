@@ -4,7 +4,7 @@ const SPRITE_SIZE = gameData.spriteSize;
 const STEP_DURATION = gameData.stepAnimationDuration;
 const FRAMES_STEP = gameData.framesStep;
 
-import { CTX, ISAAC_SPRITE } from "./canvas";
+import { CTX, ISAAC_SPRITE, ISAAC_POWERUP } from "./canvas";
 
 import STATE from "./state";
 
@@ -108,7 +108,10 @@ export default class PacmanAnimation {
     }
     else {
       this.drawBody(x, y);
-      this.drawHead(x, y);
+      if (this.pacman.state === "POWERUP") {
+        this.drawHeadPowerup(x, y);
+      }
+      else this.drawHead(x, y);
     }
   }
 
@@ -242,6 +245,51 @@ export default class PacmanAnimation {
       y,
       TILE_SIZE + incrementConst,
       TILE_SIZE + incrementConst,
+    );
+
+    CTX.restore();
+  }
+
+
+  drawHeadPowerup(x, y) {
+    const decalageSource = 4;
+    const decalageDestination = 12;
+    const incrementConst = 0;
+
+    CTX.save();
+ 
+    let coordX = x * TILE_SIZE - SPRITE_SIZE /2;
+    let coordY = (y-.6)    * TILE_SIZE - SPRITE_SIZE /2 ;
+        
+
+    let spriteIndex = 0;
+    let stepAnimation = this.stepAnimation > 4 ? 1 : this.stepAnimation;
+    let isReversed = false;
+
+    if (this.pacman.direction === 'LEFT') {
+      isReversed = true;
+    }
+
+
+    if (isReversed) {
+      CTX.translate( coordX + SPRITE_SIZE * 1.85, coordY);
+      CTX.scale(-1, 1);
+      coordX = 0;
+      coordY = 0
+    }
+
+    console.log(stepAnimation * SPRITE_SIZE);
+
+    CTX.drawImage(
+      ISAAC_POWERUP,
+      stepAnimation * SPRITE_SIZE * 2 + decalageSource,
+      0,
+      TILE_SIZE *2 - decalageSource * 2,
+      TILE_SIZE* 2 - decalageSource * 2,
+      coordX,
+      coordY,
+      TILE_SIZE * 2  + incrementConst,
+      TILE_SIZE * 2 + incrementConst,
     );
 
     CTX.restore();

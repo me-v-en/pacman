@@ -15,7 +15,7 @@ export default class PacmanBehaviour {
     this.pacman = pacman;
   }
 
-
+ 
   update() {
     this.processTile();
     this.setSpeed();

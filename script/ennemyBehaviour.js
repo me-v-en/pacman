@@ -172,7 +172,7 @@ getPossibleTiles() {
   }
 
   setFleeMode() {
-    if (this.ennemy.state === 'SCATTER' || this.ennemy.state === 'CHASE') {
+    if (this.ennemy.state !== 'DEAD') {
       this.ennemy.state = 'FLEE';
       this.direction = '';
     }

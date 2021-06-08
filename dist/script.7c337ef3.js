@@ -123,7 +123,7 @@ parcelRequire = (function (modules, cache, entry, globalName) {
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.ENNEMY_BODY = exports.ENNEMY_HEAD = exports.ISAAC_SPRITE = exports.PILL_IMAGE = exports.COIN_IMAGE = exports.BG_IMAGE = exports.CTX = exports.SCORE_ELEMENT = exports.CANVAS_ELEMENT = void 0;
+exports.ENNEMY_BODY = exports.ENNEMY_HEAD = exports.ISAAC_POWERUP = exports.ISAAC_SPRITE = exports.PILL_IMAGE = exports.COIN_IMAGE = exports.BG_IMAGE = exports.CTX = exports.SCORE_ELEMENT = exports.CANVAS_ELEMENT = void 0;
 var CANVAS_ELEMENT = document.getElementById("canvas");
 exports.CANVAS_ELEMENT = CANVAS_ELEMENT;
 var SCORE_ELEMENT = document.getElementById("score");
@@ -139,6 +139,8 @@ var PILL_IMAGE = document.getElementById("pill");
 exports.PILL_IMAGE = PILL_IMAGE;
 var ISAAC_SPRITE = document.getElementById("isaacSprite");
 exports.ISAAC_SPRITE = ISAAC_SPRITE;
+var ISAAC_POWERUP = document.getElementById("isaacPowerup");
+exports.ISAAC_POWERUP = ISAAC_POWERUP;
 var ENNEMY_HEAD = document.getElementById("ennemyHead");
 exports.ENNEMY_HEAD = ENNEMY_HEAD;
 var ENNEMY_BODY = document.getElementById("ennemyBody");
@@ -716,7 +718,7 @@ var EnnemyBehaviour = /*#__PURE__*/function () {
   }, {
     key: "setFleeMode",
     value: function setFleeMode() {
-      if (this.ennemy.state === 'SCATTER' || this.ennemy.state === 'CHASE') {
+      if (this.ennemy.state !== 'DEAD') {
         this.ennemy.state = 'FLEE';
         this.direction = '';
       }
@@ -1405,7 +1407,10 @@ var PacmanAnimation = /*#__PURE__*/function () {
         this.drawDeath(x, y);
       } else {
         this.drawBody(x, y);
-        this.drawHead(x, y);
+
+        if (this.pacman.state === "POWERUP") {
+          this.drawHeadPowerup(x, y);
+        } else this.drawHead(x, y);
       }
     }
   }, {
@@ -1519,6 +1524,40 @@ var PacmanAnimation = /*#__PURE__*/function () {
       }
 
       _canvas.CTX.drawImage(_canvas.ISAAC_SPRITE, stepAnimation * SPRITE_SIZE, 0, TILE_SIZE, TILE_SIZE, x, y, TILE_SIZE + incrementConst, TILE_SIZE + incrementConst);
+
+      _canvas.CTX.restore();
+    }
+  }, {
+    key: "drawHeadPowerup",
+    value: function drawHeadPowerup(x, y) {
+      var decalageSource = 4;
+      var decalageDestination = 12;
+      var incrementConst = 0;
+
+      _canvas.CTX.save();
+
+      var coordX = x * TILE_SIZE - SPRITE_SIZE / 2;
+      var coordY = (y - .6) * TILE_SIZE - SPRITE_SIZE / 2;
+      var spriteIndex = 0;
+      var stepAnimation = this.stepAnimation > 4 ? 1 : this.stepAnimation;
+      var isReversed = false;
+
+      if (this.pacman.direction === 'LEFT') {
+        isReversed = true;
+      }
+
+      if (isReversed) {
+        _canvas.CTX.translate(coordX + SPRITE_SIZE * 1.85, coordY);
+
+        _canvas.CTX.scale(-1, 1);
+
+        coordX = 0;
+        coordY = 0;
+      }
+
+      console.log(stepAnimation * SPRITE_SIZE);
+
+      _canvas.CTX.drawImage(_canvas.ISAAC_POWERUP, stepAnimation * SPRITE_SIZE * 2 + decalageSource, 0, TILE_SIZE * 2 - decalageSource * 2, TILE_SIZE * 2 - decalageSource * 2, coordX, coordY, TILE_SIZE * 2 + incrementConst, TILE_SIZE * 2 + incrementConst);
 
       _canvas.CTX.restore();
     }
@@ -1875,7 +1914,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "35595" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "38535" + '/');
 
   ws.onmessage = function (event) {
     checkedAssets = {};
